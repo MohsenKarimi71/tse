@@ -2,4 +2,6 @@
 related/*
 tse_excel_data/*
 act.bat
-test-partial-codes/test.db
+test-partial-codes/*.db
+
+__pycache__/**

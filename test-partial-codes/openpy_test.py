@@ -1,6 +1,39 @@
 from openpyxl import load_workbook
 import numpy as np
 
+
+### Creating Excel File Using openpyxl Library ###
+# wb = Workbook()
+# ws1 = wb.create_sheet("data1", 0)
+# ws2 = wb.create_sheet("data0", -1)
+# ws3 = wb.create_sheet("data2")
+
+# print(wb.sheetnames)
+
+# for sheet in wb:
+#     print(sheet.title)
+
+# ws = wb.active
+# print("active sheet: ", ws.title)
+# ws['A1'] = 50
+# ws['B1'] = 78
+# ws['C1'] = 35
+# ws.cell(row=2, column=1, value="hello!")
+# ws.cell(row=2, column=2, value="hello!")
+# ws.cell(row=2, column=3, value="hello!")
+# wb.save("test.xlsx")
+
+### Reading Data File Using openpyxl Library ###
+# wb = load_workbook("data/14030809-001.xlsx")
+# sheet = wb.active
+
+# values = []
+# for i in range(4, 14):
+#     values.append((sheet.cell(row=i, column=1).value, sheet.cell(row=i, column=5).value))
+
+# print(values)
+
+
 sakook = 0
 option = 0
 morabehe = 0
@@ -8,7 +41,7 @@ ejare = 0
 sandoogh = 0
 zero_values = 0
 total = 0
-wb = load_workbook(filename = 'data01.xlsx')
+# wb = load_workbook(filename = 'data01.xlsx')
 
 column_title = [
     "نماد",
@@ -71,26 +104,26 @@ values = []
 #     print(sheet.title)
 
 
-ws = wb.active
-for row in ws.iter_rows(min_row=4, min_col=2, max_col=10):
-    total += 1
+# ws = wb.active
+# for row in ws.iter_rows(min_row=4, min_col=2, max_col=10):
+#     total += 1
 
-    if ("صكوك") in row[0].value:
-        sakook+= 1
-    elif "مرابحه" in row[0].value:
-        morabehe += 1
-    elif "اجاره" in row[0].value:
-        ejare += 1
-    elif "اختيار" in row[0].value:
-        option += 1
-    elif "صندوق" in row[0].value:
-        sandoogh += 1
-    elif row[1].value == "0":
-        zero_values += 1
-    else:
-        # percents.append([row[0].value, int(row[3].value)])
-        percents.append(float(row[8].value))
-        values.append(int(row[3].value))
+#     if ("صكوك") in row[0].value:
+#         sakook+= 1
+#     elif "مرابحه" in row[0].value:
+#         morabehe += 1
+#     elif "اجاره" in row[0].value:
+#         ejare += 1
+#     elif "اختيار" in row[0].value:
+#         option += 1
+#     elif "صندوق" in row[0].value:
+#         sandoogh += 1
+#     elif row[1].value == "0":
+#         zero_values += 1
+#     else:
+#         # percents.append([row[0].value, int(row[3].value)])
+#         percents.append(float(row[8].value))
+#         values.append(int(row[3].value))
 
 
 # print("total: ", total)

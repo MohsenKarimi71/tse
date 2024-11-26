@@ -1,47 +1,27 @@
-import requests
+import datetime
+import os
 from openpyxl import Workbook, load_workbook
+import requests
 
-from variables import DOWNLOAD_LINK
-print(DOWNLOAD_LINK) 
-### Downloading Data file and Saving it into a File ###
-
-# for i in range(76, 77):
-#     name = 'data/14030813-' + str(i) + '.xlsx'
-#     print(name)
-#     response = requests.get(DOWNLOAD_LINK)
-
-#     output = open(name, 'wb')
-#     output.write(response.content)
-#     output.close()
+from variables import DOWNLOAD_LINK, START_TIME, END_TIME
+from tools import download_excel_data_file
 
 
-### Creating Excel File Using openpyxl Library ###
-# wb = Workbook()
-# ws1 = wb.create_sheet("data1", 0)
-# ws2 = wb.create_sheet("data0", -1)
-# ws3 = wb.create_sheet("data2")
+# create daily directory to store data files
+daily_directory_path = os.path.join('tse_excel_data', datetime.date.today().strftime("%Y%m%d"))
+os.makedirs(daily_directory_path, exist_ok=True)
 
-# print(wb.sheetnames)
+counter = 0
+### Download data files and Saving it into a File ###
+while(END_TIME > datetime.datetime.now().time() > START_TIME):
+    if(counter < 3):
+        file_name = os.path.join(daily_directory_path)
+        # print(file_name)
 
-# for sheet in wb:
-#     print(sheet.title)
+        print("downloading...")
+        download_excel_data_file(daily_directory_path)
+        counter=+1
 
-# ws = wb.active
-# print("active sheet: ", ws.title)
-# ws['A1'] = 50
-# ws['B1'] = 78
-# ws['C1'] = 35
-# ws.cell(row=2, column=1, value="hello!")
-# ws.cell(row=2, column=2, value="hello!")
-# ws.cell(row=2, column=3, value="hello!")
-# wb.save("test.xlsx")
+print("time finished!")
 
-### Reading Data File Using openpyxl Library ###
-# wb = load_workbook("data/14030809-001.xlsx")
-# sheet = wb.active
 
-# values = []
-# for i in range(4, 14):
-#     values.append((sheet.cell(row=i, column=1).value, sheet.cell(row=i, column=5).value))
-
-# print(values)
