@@ -16,9 +16,9 @@ try:
     # cursor.execute(query)
 
 
-    # # get name of tables in database
-    # result = cursor.execute("SELECT name from sqlite_master")
-    # print("tables: ", result.fetchall())
+    # get name of tables in database
+    result = cursor.execute("SELECT name from sqlite_master")
+    print("tables: ", result.fetchall())
 
     # # serach for a table name in database
     # result = cursor.execute("SELECT name from sqlite_master WHERE name='test1'")

@@ -3,5 +3,6 @@ related/*
 tse_excel_data/*
 act.bat
 test-partial-codes/*.db
+test.db
 
 __pycache__/**
