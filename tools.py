@@ -3,6 +3,8 @@ import os
 import datetime
 import sqlite3
 import requests
+import re
+
 from openpyxl import load_workbook
 
 from variables import DOWNLOAD_LINK 
@@ -68,3 +70,24 @@ def create_table_in_sqlite(db, table, columns):
     if sqliteConnection:
         sqliteConnection.close()
     print("table created!!!")
+
+
+def exist_in_option_chain(search, namad):
+    # Return True if the 'search' phrase exist in 'namad'
+    if search in namad:
+        return True
+    return False
+
+
+def convert_persian_to_english_number():
+    pass
+
+def extract_strike_price(text):
+    match = re.search(r'-(\d+)-', text)
+    # match = re.search(r'[\u0600-\u06FF]+-(\d+)-', text)
+    return match.group(1) if match else None
+
+def extract_expiry_date(text):
+    match = re.search(r'(\d{4})/(\d{2})/(\d{2})', text)
+    return (match.group(1), match.group(2), match.group(3)) if match else None
+

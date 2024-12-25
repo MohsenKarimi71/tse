@@ -44,8 +44,8 @@ try:
 
 
     # # some queries to get data from 'tsetmc' table
-    # result = cursor.execute("SELECT * FROM tsetmc")
-    # print("data: ", result.fetchall())
+    result = cursor.execute("SELECT * FROM tsetmc")
+    print("data: ", result.fetchall())
 
     # result = cursor.execute("SELECT title FROM tsetmc")
     # print("data: ", result.fetchall())
@@ -57,9 +57,9 @@ try:
     # for row in result:
     #     print(row[0], "\t ===> \t", row[1])
     
-    result = cursor.execute("SELECT title, volume, price FROM tsetmc ORDER BY volume DESC")
-    for row in result:
-        print(row[0],"(", row[2],")\t ===> \t", row[1])
+    # result = cursor.execute("SELECT title, volume, price FROM tsetmc ORDER BY volume DESC")
+    # for row in result:
+    #     print(row[0],"(", row[2],")\t ===> \t", row[1])
 
 
 	# Close the cursor
