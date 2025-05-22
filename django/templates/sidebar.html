@@ -1,0 +1,19 @@
+<div id="sidebar">
+    {% if user.is_top_manager %}
+    <a id="home_link" href="/">خانه</a>
+    {% endif %}
+
+    <a id="tse_download_setup" href="/tse/setup">دانلود</a>
+
+    <a id="profile_link">پروفایل</a>
+
+
+    <a id="exit_link" data-bs-toggle="tooltip" data-bs-placement="top" title="تغییر رمز عبور">
+        تغییر رمز عبور <i class="fa-solid fa-unlock-keyhole"></i>
+    </a>
+
+    <a id="exit_link" data-bs-toggle="tooltip" data-bs-placement="top" title="خروج">
+        خروج <i class="fa-solid fa-right-from-bracket"></i>
+    </a>
+
+</div>

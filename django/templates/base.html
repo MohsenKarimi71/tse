@@ -1,0 +1,54 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}{% endblock title %}</title>
+
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.rtl.min.css' %}">
+
+    <link rel="stylesheet" href="{% static 'bootstrap-select/bootstrap-select.min.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/animate.min.css' %}">
+
+
+    <link rel="stylesheet" href="{% static 'toastify/toastify.min.css' %}">
+
+
+    <link rel="stylesheet" href="{% static 'datepicker/jalalidatepicker.min.css' %}">
+
+
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+
+    {% block template_styles %} {% endblock template_styles %}
+
+    <script src="{% static 'js/jquery-3.6.1.min.js' %}"></script>
+
+    <script src="{% static 'js/tools.js' %}"></script>
+
+    <script src="{% static 'fontawesomefree/js/fontawesome.js' %}"></script>
+    <script src="{% static 'fontawesomefree/js/solid.js' %}"></script>
+    <script src="{% static 'fontawesomefree/js/regular.js' %}"></script>
+
+    <script src="{% static 'datepicker/jalalidatepicker.min.js' %}"></script>
+
+    {% block template_js %} {% endblock template_js %}
+  </head>
+
+  <body style="font-family: IRANSans; font-size: 15px">
+    {% block content %} {% endblock content %}
+
+    <script
+      type="text/javascript"
+      src="{% static 'toastify/toastify.min.js' %}"
+    ></script>
+
+    <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <script src="{% static 'bootstrap-select/bootstrap-select.min.js' %}"></script>
+
+  </body>
+</html>

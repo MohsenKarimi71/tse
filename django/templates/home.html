@@ -1,0 +1,27 @@
+{% extends 'base_page.html' %}
+{% load static %}
+
+{% block template_styles %}
+{% endblock template_styles %}
+
+{% block template_js %}
+
+{% endblock template_js %}
+
+{% block title %} خانه {% endblock title %}
+
+{% block sidebar %}
+{% include 'sidebar.html' %}
+{% endblock sidebar %}
+
+{% block main_body %}
+<div id="home_content_container">
+
+
+</div>
+<script>
+    $(document).ready(function () {
+        $("#home_link").addClass("active");
+    });
+</script>
+{% endblock main_body %}
