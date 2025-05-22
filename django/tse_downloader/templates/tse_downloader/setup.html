@@ -1,0 +1,34 @@
+{% extends 'base_page.html' %}
+{% load static %}
+
+{% block template_styles %}
+<link rel="stylesheet" href="{% static 'tse_downloader/setup.css' %}">
+{% endblock template_styles %}
+
+{% block template_js %}
+
+{% endblock template_js %}
+
+{% block title %} تنظیمات دانلود{% endblock title %}
+
+{% block sidebar %}
+{% include 'sidebar.html' %}
+{% endblock sidebar %}
+
+{% block main_body %}
+<div class="flex_container">
+    <div>
+        <div class="cards">
+            <div class="card card-violent">برای تنظیمات دانلود</div>
+        </div>
+    </div>
+    <div>
+        <a href="/tse/download"><button type="button" class="btn btn-primary">شروع دانلود</button></a>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#tse_download_setup").addClass("active");
+    });
+</script>
+{% endblock main_body %}
