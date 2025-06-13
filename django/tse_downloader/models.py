@@ -50,6 +50,7 @@ class AbstractStockClass(models.Model):
     NONFERROUS_METALS = 'NNFRSMTLS'
     OIL_GAS = 'OILGAS'
     CERAMICS_GLASS = 'CRMCSGLS'
+    SANDOGH = 'SNDGH'
     OTHER = 'OTHER'
 
     GROUP_CHOICES = [
@@ -70,6 +71,7 @@ class AbstractStockClass(models.Model):
         (NONFERROUS_METALS, 'صنعت فلزات غیرآهنی'),
         (OIL_GAS, 'صنعت نفت و گاز'),
         (CERAMICS_GLASS, 'صنعت سرامیک و شیشه'),
+        (SANDOGH, 'صندوق ها'),
         (OTHER, 'دیگر گروه ها')
     ]
 
@@ -87,7 +89,7 @@ class AbstractStockClass(models.Model):
 
 
 class Stock(AbstractStockClass):
-    is_in_option_chain = models.BinaryField(default=False)
+    is_in_option_chain = models.BooleanField(default=False)
 
 
 class StockPrice(models.Model):
