@@ -1,0 +1,443 @@
+{% extends 'base_page.html' %}
+{% load static %}
+{% load date_filters %}
+
+{% block template_styles %}
+{% endblock template_styles %}
+
+{% block template_js %}
+{% endblock template_js %}
+
+{% block title %}کاوردکال{% endblock title %}
+
+{% block sidebar %}
+{% include 'sidebar.html' %}
+{% endblock sidebar %}
+
+{% block main_body %}
+<div>
+    <!-- Cards -->
+    <div id="info_cards" class="cards px-5 mt-5" hidden>
+        <div class="card card-violent" id="all_contracts_counter">
+            اختیار خریدهای با سهام قیمت دار: {{ all_call_contracts_count }}
+        </div>
+        <div class="card card-red" id="contracts_with_price_counter">
+            اختیار خریدهای با قرارداد قیمت دار: {{ call_contracts_with_deal_price_count }}
+        </div>
+        <div class="card card-green" id="filtered_contracts_counter">
+            اختیار خریدهای فیلترشده: {{ filtered_call_contracts_count }} 
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="mx-2 px-5 py-2 mt-5 flex_container" style="align-items: stretch;">
+
+        <div class="flex_container" style="flex-flow:col nowrap; justify-content: space-between;">
+            <div style="width: 100%;" class="mt-5">
+                <span id="deal_count_select_live">0</span>
+                <span>معامله</span>
+                <input type="range" class="form-range" min="0" max="10000" step="1" id="deal_count_select" value="0">
+                <label for="deal_count_select" class="form-label">حداقل تعداد معاملات</label>
+            </div>
+
+            <div style="width: 100%;" class="mt-5">
+                <span id="deal_volume_select_live">0</span>
+                <span>سهم</span>
+                <input type="range" class="form-range" min="0" max="1000000" step="100" id="deal_volume_select" value="0">
+                <label for="deal_volume_select" class="form-label">حداقل حجم معاملات</label>
+            </div>
+
+            <div style="width: 100%;" class="mt-5">
+                <span id="deal_value_select_live">0</span>
+                <span>تومان</span>
+                <input type="range" class="form-range" min="0" max="1000000000" step="1000000" id="deal_value_select" value="0">
+                <label for="deal_value_select" class="form-label">حداقل ارزش معاملات</label>
+            </div>
+
+            <select class="selectpicker form-control mt-5" multiple
+                id="stocks_select"
+                title="انتخاب سهام"
+                data-live-search="true"
+                data-selected-text-format="count > 5"
+                data-style="btn-dark"
+                show-menu-arrow>
+                {% for stock in stocks %}
+                <option value="{{stock.pk}}">{{ stock.symbol }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+
+        <div style="align-self: center;" class="mt-5">
+            <button type="button" id="show_based_price_filters" class="btn btn-success">نمایش براساس فیلترها</button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="mx-2 mt-5 px-5 pt-2 border-top border-dark border-3">
+        <table class="table table-striped table-hover" id="contract_table">
+            <thead>
+                <tr class="text-center">
+                    <th>ردیف</th>
+                    <th>سهم</th>
+                    <th>قیمت</th>
+                    <th>قیمت اعمال</th>
+                    <th>تعداد</th>
+                    <th>حجم</th>
+                    <th>ارزش</th>
+                    <th>آخرین معامله</th>
+                    <th>پیشنهاد خرید</th>
+                    <th>پیشنهاد فروش</th>
+                    <th>تاریخ سررسید</th>
+                    <th>فاصله تا انقضا</th>
+                    <th>بازده فعلی</th>
+                    <th>بازده روزانه</th>
+                    <th>بازده سالیانه</th>
+                    <th>حاشیه امن</th>
+                    <th>حاشیه امن روزانه</th>
+                    <th>امتیاز ریسک</th>
+                    <th>بازده بیشینه</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $("#option_strategies").addClass("active");
+
+        function value2color(value, min_profit, max_profit) {
+            if(value < min_profit) {
+                value = min_profit;
+            }
+            if(value > max_profit) {
+                value = max_profit;
+            }
+
+            const ratio = (value - min_profit) / (max_profit - min_profit);  // normalization to (0, 1)
+            const r = Math.round(255 * (1 - ratio));  // red color
+            const g = Math.round(255 * ratio);  // green color
+            const b = 100;  // blue color
+
+            return `rgb(${r}, ${g}, ${b})`
+        }
+
+        function number2words(num) {
+            if(num === 0) {
+                return "صفر";
+            }
+            const yekan = ["", "یک", "دو", "سه", "چهار", "پنج", "شش", "هفت", "هشت", "نه"];
+            const dahyekan = ["ده", "یازده", "دوازده", "سیزده", "چهارده", "پانزده", "شانزده", "هفده", "هجده", "نوزده"];
+            const dahgan = ["", "", "بیست", "سی", "چهل", "پنجاه", "شصت", "هفتاد", "هشتاد", "نود"];
+            const sadgan = ["", "صد", "دویست", "سیصد", "چهارصد", "پانصد", "ششصد", "هفتصد", "هشتصد", "نهصد"];
+            const hezargan = ["", "هزار", "میلیون", "میلیارد", "تریلیون"];
+
+            function threeDigits2word(n) {
+                let word = ""
+
+                let s = Math.floor(n / 100);
+                let d = Math.floor((n % 100) / 10);
+                let y = n % 10
+                
+                if (s !== 0) {
+                    word += sadgan[s] + " ";
+                    if (d > 0 || y > 0) {
+                        word += "و ";
+                    }
+                }
+
+                if (d === 1) {
+                    word += dahyekan[y] + " ";
+                    return word;
+                } else if(d !== 0) {
+                    word += dahgan[d] + " ";
+                    if(y > 0) {
+                        word += "و "
+                    }
+                }
+                if(y !== 0) {
+                    word += yekan[y] + " ";
+                }
+                return word
+            }
+            
+            let parts = [];
+            let groupIndex = 0;
+            
+            while(num > 0) {
+                let threeDigits = num % 1000;
+                if(threeDigits !== 0) {
+                    let part = threeDigits2word(threeDigits);
+                    part += hezargan[groupIndex];
+                    parts.push(part.trim());
+                }
+
+                num = Math.floor(num / 1000);
+                groupIndex++;
+            }
+
+            return parts.reverse().join(" و ");
+        }
+
+        const deal_count_select_live = document.getElementById("deal_count_select_live");
+        document.getElementById("deal_count_select").addEventListener('input', function(){
+            deal_count_select_live.textContent = number2words(this.value);
+        });
+
+        const deal_volume_select_live = document.getElementById("deal_volume_select_live");
+        document.getElementById("deal_volume_select").addEventListener('input', function(){
+            deal_volume_select_live.textContent = number2words(this.value);
+        });
+
+        const deal_value_select_live = document.getElementById("deal_value_select_live");
+        document.getElementById("deal_value_select").addEventListener('input', function(){
+            deal_value_select_live.textContent = number2words(this.value);
+        });
+    
+        document.getElementById('show_based_price_filters').addEventListener('click', function() {
+            const selected_deal_count = document.getElementById("deal_count_select").value;
+            const selected_deal_volume = document.getElementById("deal_volume_select").value;
+            const selected_deal_value = document.getElementById("deal_value_select").value;
+            const stocks_select = document.getElementById("stocks_select");
+            const selected_stocks = Array.from(stocks_select.selectedOptions).map(opt => opt.value);
+
+            fetch("/option_strategy/coveredcall/all/", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // 'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    min_deal_count:selected_deal_count,
+                    min_deal_volume:selected_deal_volume,
+                    min_deal_value:selected_deal_value,
+                    stocks:selected_stocks,
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                // console.log("data:", result.data);
+                const data = result.data;
+                const all_contracts_counter = document.getElementById('all_contracts_counter');
+                all_contracts_counter.innerHTML = "تعداد کل قراردادها: " + result.all_call_contracts_count;
+
+                const contracts_with_price_counter = document.getElementById('contracts_with_price_counter');
+                contracts_with_price_counter.innerHTML = "اختیار خریدهای با قرارداد قیمت دار: " + result.call_contracts_with_deal_price_count;
+
+                const filtered_contracts_counter = document.getElementById('filtered_contracts_counter');
+                filtered_contracts_counter.innerHTML = "تعداد قراردادهای فیلترشده: " + result.filtered_call_contracts_count;
+
+                document.getElementById('info_cards').hidden = false;
+
+                const tbody = document.querySelector('#contract_table tbody');
+                tbody.innerHTML = '';  // clear current data of table
+
+                let counter = 0;
+                data["itm"].forEach(contract => {
+                    const row = document.createElement('tr');
+
+                    const index = document.createElement('td');
+                    counter ++;
+                    index.textContent = counter;
+                    row.appendChild(index);
+
+                    const symbol = document.createElement('td');
+                    symbol.textContent = contract.stock;
+                    row.appendChild(symbol);
+
+                    const stock_price = document.createElement('td');
+                    stock_price.textContent = contract.stock_price;
+                    row.appendChild(stock_price);
+
+                    const strike_price = document.createElement('td');
+                    strike_price.textContent = contract.strike_price;
+                    row.appendChild(strike_price);
+
+                    const deal_count = document.createElement('td');
+                    deal_count.textContent = contract.deal_count;
+                    row.appendChild(deal_count);
+
+                    const deal_volume = document.createElement('td');
+                    deal_volume.textContent = contract.deal_volume;
+                    row.appendChild(deal_volume);
+
+                    const deal_value = document.createElement('td');
+                    deal_value.textContent = contract.deal_value;
+                    row.appendChild(deal_value);
+
+                    const last_deal_price = document.createElement('td');
+                    last_deal_price.textContent = contract.last_deal_price;
+                    row.appendChild(last_deal_price);
+
+                    const buy_bid_price = document.createElement('td');
+                    buy_bid_price.textContent = contract.buy_bid_price;
+                    row.appendChild(buy_bid_price);
+
+                    const sell_bid_price = document.createElement('td');
+                    sell_bid_price.textContent = contract.sell_bid_price;
+                    row.appendChild(sell_bid_price);
+
+                    const expiration_date = document.createElement('td');
+                    expiration_date.textContent = contract.expiration_date;
+                    row.appendChild(expiration_date);
+
+                    const days_remaining = document.createElement('td');
+                    days_remaining.textContent = contract.days_remaining + " روز";
+                    row.appendChild(days_remaining);
+                    
+                    const cccpp = document.createElement('td');
+                    cccpp.textContent = contract.current_profit;
+                    cccpp.style.direction = 'ltr';
+                    // cccpp.style.backgroundColor = value2color(contract.current_profit, -25, 25);
+                    row.appendChild(cccpp);  //Covered Call Current Profit Percent
+
+                    const cccdpp = document.createElement('td');
+                    cccdpp.textContent = contract.daily_profit_percent;
+                    cccdpp.style.backgroundColor = value2color(contract.daily_profit_percent, -1, 1);
+                    cccdpp.style.direction = 'ltr';
+                    row.appendChild(cccdpp);  //Covered Call Current Daily Profit Percent
+
+                    const cccypp = document.createElement('td');
+                    cccypp.textContent = contract.yearly_profit_percent;
+                    cccypp.style.backgroundColor = value2color(contract.yearly_profit_percent, 30, 100);
+                    cccypp.style.direction = 'ltr';
+                    row.appendChild(cccypp);  //Covered Call Current Yearly Profit Percent
+
+                    const ccnrrp = document.createElement('td');
+                    ccnrrp.textContent = contract.no_risk_range;
+                    ccnrrp.style.direction = 'ltr';
+                    row.appendChild(ccnrrp);  //Covered Call No-Risk Range Percent
+
+                    const ccdnrrp = document.createElement('td');
+                    ccdnrrp.textContent = Math.round((contract.no_risk_range / contract.days_remaining) * 10) / 10;
+                    ccdnrrp.style.direction = 'ltr';
+                    ccdnrrp.style.backgroundColor = value2color(Math.round((contract.no_risk_range / contract.days_remaining) * 10) / 10, -5, 5);
+                    row.appendChild(ccdnrrp);  //Covered Call Daily No-Risk Range Percent
+
+                    const ccrs = document.createElement('td');
+                    ccrs.textContent = contract.risk_score;
+                    ccrs.style.direction = 'ltr';
+                    ccrs.style.backgroundColor = value2color(contract.risk_score, -4, 10);
+                    row.appendChild(ccrs);  //Covered Call Risk Score
+
+                    const ccmpp = document.createElement('td');
+                    ccmpp.textContent = contract.max_profit;
+                    ccmpp.style.direction = 'ltr';
+                    row.appendChild(ccmpp);  //Covered Call Max Profit Percent
+
+                    row.classList.add('text-center');
+
+                    tbody.appendChild(row);
+                });
+
+                data["otm"].forEach(contract => {
+                    const row = document.createElement('tr');
+
+                    const index = document.createElement('td');
+                    counter ++;
+                    index.textContent = counter;
+                    index.style.backgroundColor = 'rgb(255, 50, 150)';
+                    row.appendChild(index);
+
+                    const symbol = document.createElement('td');
+                    symbol.textContent = contract.stock;
+                    row.appendChild(symbol);
+
+                    const stock_price = document.createElement('td');
+                    stock_price.textContent = contract.stock_price;
+                    row.appendChild(stock_price);
+
+                    const strike_price = document.createElement('td');
+                    strike_price.textContent = contract.strike_price;
+                    row.appendChild(strike_price);
+
+                    const deal_count = document.createElement('td');
+                    deal_count.textContent = contract.deal_count;
+                    row.appendChild(deal_count);
+
+                    const deal_volume = document.createElement('td');
+                    deal_volume.textContent = contract.deal_volume;
+                    row.appendChild(deal_volume);
+
+                    const deal_value = document.createElement('td');
+                    deal_value.textContent = contract.deal_value;
+                    row.appendChild(deal_value);
+
+                    const last_deal_price = document.createElement('td');
+                    last_deal_price.textContent = contract.last_deal_price;
+                    row.appendChild(last_deal_price);
+
+                    const buy_bid_price = document.createElement('td');
+                    buy_bid_price.textContent = contract.buy_bid_price;
+                    row.appendChild(buy_bid_price);
+
+                    const sell_bid_price = document.createElement('td');
+                    sell_bid_price.textContent = contract.sell_bid_price;
+                    row.appendChild(sell_bid_price);
+
+                    const expiration_date = document.createElement('td');
+                    expiration_date.textContent = contract.expiration_date;
+                    row.appendChild(expiration_date);
+
+                    const days_remaining = document.createElement('td');
+                    days_remaining.textContent = contract.days_remaining + " روز";
+                    row.appendChild(days_remaining);
+
+                    const cccpp = document.createElement('td');
+                    cccpp.textContent = contract.current_profit;
+                    cccpp.style.direction = 'ltr';
+                    row.appendChild(cccpp);  //Covered Call Current Profit Percent
+
+                    const cccdpp = document.createElement('td');
+                    cccdpp.textContent = contract.daily_profit_percent;
+                    cccdpp.style.backgroundColor = value2color(contract.daily_profit_percent, -1, 1);
+                    cccdpp.style.direction = 'ltr';
+                    row.appendChild(cccdpp);  //Covered Call Current Daily Profit Percent
+                    
+                    const cccypp = document.createElement('td');
+                    cccypp.textContent = contract.yearly_profit_percent;
+                    cccypp.style.backgroundColor = value2color(contract.yearly_profit_percent, 30, 100);
+                    cccypp.style.direction = 'ltr';
+                    row.appendChild(cccypp);  //Covered Call Current Yearly Profit Percent
+
+                    const ccnrrp = document.createElement('td');
+                    ccnrrp.textContent = contract.no_risk_range;
+                    ccnrrp.style.direction = 'ltr';
+                    ccnrrp.style.backgroundColor = value2color(contract.no_risk_range, -50, 50);
+                    row.appendChild(ccnrrp);  //Covered Call No-Risk Range Percent
+
+                    const ccdnrrp = document.createElement('td');
+                    ccdnrrp.textContent = Math.round((contract.no_risk_range / contract.days_remaining) * 10) / 10;
+                    ccdnrrp.style.direction = 'ltr';
+                    ccdnrrp.style.backgroundColor = value2color(Math.round((contract.no_risk_range / contract.days_remaining) * 10) / 10, -5, 5);
+                    row.appendChild(ccdnrrp);  //Covered Call Daily No-Risk Range Percent
+
+                    const ccrs = document.createElement('td');
+                    ccrs.textContent = contract.risk_score;
+                    ccrs.style.direction = 'ltr';
+                    ccrs.style.backgroundColor = value2color(contract.risk_score, -4, 10);
+                    row.appendChild(ccrs);  //Covered Call Risk Score
+
+                    const ccmpp = document.createElement('td');
+                    ccmpp.textContent = contract.max_profit;
+                    ccmpp.style.direction = 'ltr';
+                    row.appendChild(ccmpp);  //Covered Call Max Profit Percent
+
+                    row.classList.add('text-center');
+
+                    tbody.appendChild(row);
+                });
+
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+
+        });
+    });
+</script>
+{% endblock main_body %}

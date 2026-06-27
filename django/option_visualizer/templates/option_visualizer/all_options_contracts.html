@@ -1,0 +1,173 @@
+{% extends 'base_page.html' %}
+{% load static %}
+{% load date_filters %}
+
+{% block template_styles %}
+{% endblock template_styles %}
+
+{% block template_js %}
+{% endblock template_js %}
+
+{% block title %} تمامی اختیار معامله ها{% endblock title %}
+
+{% block sidebar %}
+{% include 'sidebar.html' %}
+{% endblock sidebar %}
+
+{% block main_body %}
+<div>
+    <div class="cards px-5 py-5">
+        <div class="card card-violent" id="all_contracts_counter">
+            تعداد کل قراردادها: {{ all_contracts_count }}
+        </div>
+        <div class="card card-green" id="filtered_contracts_counter">
+            تعداد قراردادهای فیلترشده: {{ contracts_count }} 
+        </div>
+        <div class="card card-red">
+            رزرو
+        </div>
+    </div>
+
+    
+    <div class="mb-5 mx-2 px-5 py-2 flex_container border-top border-dark border-3" style="flex-flow:row nowrap;">
+        <a class="btn btn-outline-danger" href="/tse/delete/price/all/">حذف همه قیمت ها</a>
+        <a class="btn btn-outline-danger" href="/tse/delete/contracts/expired/">حذف قراردادهای منقضی</a>
+        <a class="btn btn-outline-danger" href="/tse/delete/contracts/">حذف همه قراردادها</a>
+    
+    </div>
+
+
+    <div class="mx-2 px-5 py-2 flex_container border-top border-dark border-3" style="align-items: stretch;">
+        <div class="mt-2 mb-3 card card-orange">
+            فیلترها
+        </div>
+
+        <div class="flex_container" style="flex-flow:row nowrap; justify-content: space-between;">
+            <select class="form-select" aria-label="select contract_type" id="contract_type_select">
+                <option value="all" selected>نوع قرارداد</option>
+                <option value="BUY">اختیار خرید</option>
+                <option value="SELL">اختیار فروش</option>
+            </select>
+        </div>
+
+        <div class="my-3" style="align-self: stretch;">
+            <select class="selectpicker form-control" multiple
+            id="stocks_select"
+                title="انتخاب سهام"
+                data-live-search="true"
+                data-selected-text-format="count > 5"
+                data-style="btn-dark"
+                show-menu-arrow>
+                {% for stock in stocks %}
+                <option value="{{stock.pk}}">{{ stock.symbol }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="align-self: center;" class="mt-2">
+            <button type="button" id="show_based_price_filters" class="btn btn-success">نمایش براساس فیلترها</button>
+        </div>
+    </div>
+
+    <div class="mx-2 mt-5 px-5 pt-2 border-top border-dark border-3">
+        <table class="table table-striped table-hover" id="contract_table">
+            <thead>
+                <tr class="text-center">
+                    <th>ردیف</th>
+                    <th>سهم</th>
+                    <th>قیمت</th>
+                    <th>اختیار خرید/فروش</th>
+                    <th>قیمت اعمال</th>
+                    <th>تاریخ سررسید</th>
+                    <th>فاصله تا انقضا</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#contracts").addClass("active");
+
+        const max_profit = 25;
+        const min_profit = -25;
+
+        document.getElementById('show_based_price_filters').addEventListener('click', function() {
+            const selected_contract_type = document.getElementById("contract_type_select").value;
+            const stocks_select = document.getElementById("stocks_select");
+            const selected_stocks = Array.from(stocks_select.selectedOptions).map(opt => opt.value);
+
+            fetch("/option/contracts/all/", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // 'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    contract_type:selected_contract_type,
+                    stocks:selected_stocks,
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                // console.log("data:", result.data);
+                const data = result.data;
+                const all_contracts_counter = document.getElementById('all_contracts_counter');
+                all_contracts_counter.innerHTML = "تعداد کل قراردادها: " + result.all_contracts_count;
+
+                const filtered_contracts_counter = document.getElementById('filtered_contracts_counter');
+                filtered_contracts_counter.innerHTML = "تعداد قراردادهای فیلترشده: " + result.contracts_count;
+
+                const tbody = document.querySelector('#contract_table tbody');
+                tbody.innerHTML = '';  // clear current data of table
+
+                let counter = 0;
+                data.forEach(contract => {
+                    const row = document.createElement('tr');
+
+                    const index = document.createElement('td');
+                    counter ++;
+                    index.textContent = counter;
+                    row.appendChild(index);
+
+                    const symbol = document.createElement('td');
+                    symbol.textContent = contract.stock;
+                    row.appendChild(symbol);
+
+                    const stock_price = document.createElement('td');
+                    stock_price.textContent = contract.stock_price;
+                    row.appendChild(stock_price);
+
+                    const contract_type = document.createElement('td');
+                    contract_type.textContent = contract.contract_type;
+                    row.appendChild(contract_type);
+
+                    const strike_price = document.createElement('td');
+                    strike_price.textContent = contract.strike_price;
+                    row.appendChild(strike_price);
+
+                    const expiration_date = document.createElement('td');
+                    expiration_date.textContent = contract.expiration_date;
+                    row.appendChild(expiration_date);
+
+                    const days_remaining = document.createElement('td');
+                    days_remaining.textContent = contract.days_remaining + " روز";
+                    row.appendChild(days_remaining);
+
+                    row.classList.add('text-center');
+
+                    tbody.appendChild(row);
+                });
+
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+
+        });
+    });
+</script>
+{% endblock main_body %}

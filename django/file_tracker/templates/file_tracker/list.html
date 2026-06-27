@@ -1,0 +1,95 @@
+{% extends 'base_page.html' %}
+{% load static %}
+
+{% block template_styles %}
+{% endblock template_styles %}
+
+{% block template_js %}
+{% endblock template_js %}
+
+{% block title %}لیست فایل های اکسل{% endblock title %}
+
+{% block sidebar %}
+{% include 'sidebar.html' %}
+{% endblock sidebar %}
+
+{% block main_body %}
+<div>
+    <div class="cards px-5 py-5">
+        <div class="card card-violent">
+            تعداد کل فایل ها: {{ all_files }}
+        </div>
+        <div class="card card-green">
+            ذخیره شده ها: {{ saved_files }}
+        </div>
+        <div class="card card-red">
+            ذخیره نشده ها: {{ not_saved_files }}
+        </div>
+    </div>
+
+    <div class="px-5 py-5">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr class="text-center">
+                    <th>تاریخ دانلود (پوشه)</th>
+                    <th>نام</th>
+                    <th>سهام</th>
+                    <th>قراردادها</th>
+                    <th>قیمت ها</th>
+                    <th>حذف / نگهداری</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                <tr class="text-center">
+                    <th style="font-family:'Times New Roman', 'serif'; font-weight:bold;">{{ file.directory }}</th>
+                    <th dir="ltr" style="font-family:'Times New Roman', 'serif'; font-weight:bold;">{{ file.name }}</th>
+                    <th><a class="btn btn-outline-primary" href="/tse/save/stock/{{ file.directory }}/{{ file.name }}/">ذخیره سهام</a></th>
+                    {% if file.is_contracts_saved %}
+                        <th>ذخیره شده</th>
+                    {% else %}
+                        <th><a class="btn btn-outline-primary" href="/tse/save/contract/{{ file.directory }}/{{ file.name }}/">ذخیره قرارداد</a></th>
+                    {% endif %}
+
+
+
+                    {% if file.is_prices_saved %}
+                        <th>ذخیره شده</th>
+                    {% else %}
+                        <th><a class="btn btn-outline-primary" href="/tse/save/price/{{ file.directory }}/{{ file.name }}/">ذخیره قیمت</a></th>
+                    {% endif %}
+
+
+
+                    <th><a class="btn btn-outline-danger" href="/excel/delete/{{ file.directory }}/{{ file.name }}/">حذف</a></th>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+     <div class="px-5 py-5 flex_container" style="flex-flow:row nowrap;">
+        <a class="btn btn-outline-danger" href="/excel/delete/">حذف همه</a>
+
+        <a class="btn btn-outline-danger" href="/excel/delete/">حذف ذخیره شده ها</a>
+
+        <a class="btn btn-outline-danger" href="/excel/delete/">حذف ذخیره نشده ها</a>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $("#excel_files").addClass("active");
+
+        /* const xhr = new XMLHttpRequest();
+        xhr.onload = function(){
+            var result = this.responseText;
+            console.log("response is ready:");
+            console.log(result);
+        }
+        xhr.open("GET", "/excel/list", true);
+        xhr.send(); */
+    });
+</script>
+{% endblock main_body %}

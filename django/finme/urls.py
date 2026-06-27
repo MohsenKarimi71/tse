@@ -23,4 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home),
     path('tse/', include('tse_downloader.urls')),
+    path('excel/', include('file_tracker.urls')),
+    path('option/', include('option_visualizer.urls')),
+    path('option_strategy/', include('option_strategy.urls')),
 ]

@@ -23,14 +23,64 @@
         </div>
     </div>
     <div>
-        <a href="/tse/download"><button type="button" class="btn btn-primary">شروع دانلود</button></a>
-        <a href="/tse/save"><button type="button" class="btn btn-primary">ذخیره اطلاعات</button></a>
+        <button type="button" id="download_triger_btn" class="btn btn-primary">شروع دانلود</button>
     </div>
 
 </div>
 <script>
     $(document).ready(function () {
         $("#tse_download_setup").addClass("active");
+        document.getElementById('download_triger_btn').addEventListener('click', function() {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function(){
+                var result = xhr.response;
+
+                Toastify({
+                text: "دانلود انجام شد" + " " + result.msg ,
+                duration: 10000,
+                newWindow: true,
+                close: true,
+                gravity: "bottom", // `top` or `bottom`
+                position: "left", // `left`, `center` or `right`
+                offset: {
+                    x: 30, // horizontal axis - can be a number or a string indicating unity. eg: '2em'
+                    y: 30 
+                },
+                stopOnFocus: true, // Prevents dismissing of toast on hover
+                style: {
+                    background: "rgb(9, 243, 126)",
+                    "font-family" :"Times New Roman",
+                },
+                onClick: function(){} // Callback after click
+                }).showToast();
+
+
+
+                console.log(result);
+                console.log("response is ready:");
+                console.log(result.msg);
+            }
+            xhr.open("GET", "/tse/download", true);
+            xhr.responseType = 'json';
+            xhr.send();
+            Toastify({
+                text: "شروع دانلود ...     ",
+                duration: 6000,
+                newWindow: true,
+                close: true,
+                gravity: "bottom", // `top` or `bottom`
+                position: "left", // `left`, `center` or `right`
+                offset: {
+                    x: 30, // horizontal axis - can be a number or a string indicating unity. eg: '2em'
+                    y: 30 
+                },
+                stopOnFocus: true, // Prevents dismissing of toast on hover
+                style: {
+                    background: "rgb(243, 32, 113)",
+                },
+                onClick: function(){} // Callback after click
+            }).showToast();
+        });
     });
 </script>
 {% endblock main_body %}

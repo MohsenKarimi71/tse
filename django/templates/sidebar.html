@@ -1,16 +1,26 @@
 <div id="sidebar">
-    {% if user.is_top_manager %}
-    <a id="home_link" href="/">خانه</a>
-    {% endif %}
-
     <a id="tse_download_setup" href="/tse/setup">دانلود</a>
+    
+    <a id="excel_files" href="/excel/list">فایل ها</a>
+
+    <a id="stocks" href="">سهام</a>
+
+    <a id="options" href="/option/chain_list">زنجیره اختیار</a>
+
+    <a id="contracts" href="/option/contracts/all/">قراردادها</a>
+
+    <div id="option_strategies" class="dropdown dropend">
+        <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" style="color:rgb(37, 57, 157);">
+            استراتژی ها
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/option_strategy/coveredcall/all/" style="color:rgb(200, 0, 255);">Covered Call</a></li>
+            <li><a class="dropdown-item" href="#" style="color:rgb(200, 0, 255);">Headgeing</a></li>
+        </ul>
+    </div>
 
     <a id="profile_link">پروفایل</a>
 
-
-    <a id="exit_link" data-bs-toggle="tooltip" data-bs-placement="top" title="تغییر رمز عبور">
-        تغییر رمز عبور <i class="fa-solid fa-unlock-keyhole"></i>
-    </a>
 
     <a id="exit_link" data-bs-toggle="tooltip" data-bs-placement="top" title="خروج">
         خروج <i class="fa-solid fa-right-from-bracket"></i>

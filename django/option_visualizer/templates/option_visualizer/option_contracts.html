@@ -1,0 +1,127 @@
+{% extends 'base_page.html' %}
+{% load static %}
+{% load date_filters %}
+
+{% block template_styles %}
+{% endblock template_styles %}
+
+{% block template_js %}
+{% endblock template_js %}
+
+{% block title %} اختیار معامله های {{ option.symbol }}{% endblock title %}
+
+{% block sidebar %}
+{% include 'sidebar.html' %}
+{% endblock sidebar %}
+
+{% block main_body %}
+<div>
+    <div class="cards px-5 py-5">
+        <div class="card card-violent">
+            تعداد کل قراردادها: {{ all_contracts_count }}
+        </div>
+        <div class="card card-green">
+            تعداد قراردادهای فیلترشده: {{ contracts_count }} 
+        </div>
+        <div class="card card-red">
+            رزرو
+        </div>
+    </div>
+
+    
+    <div class="px-5 py-1 flex_container" style="flex-flow:row nowrap;">
+        <a class="btn btn-outline-danger" href="/tse/delete/price/{{ option.pk }}/">حذف قیمت ها</a>
+        <a class="btn btn-outline-danger" href="/tse/delete/contracts/expired/{{ option.pk }}/">حذف قراردادهای منقضی</a>
+        <a class="btn btn-outline-danger" href="/tse/delete/contracts/{{ option.pk }}/">حذف همه قراردادها</a>
+    </div>
+
+    <div class="mx-5 px-5 py-2 flex_container border border-dark border-3 rounded-3" style="flex-flow:column nowrap; align-items:flex-start;">
+        <div class="my-2 flex_container" style="flex-flow:row nowrap; width:100%;">
+            <select class="form-select" aria-label="select deal_count" id="deal_count_select">
+                <option selected>حداقل تعداد معاملات</option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+            </select>
+        
+            <select class="form-select" aria-label="select deal_volume">
+                <option selected>حداقل حجم معاملات</option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+            </select>
+
+            <select class="form-select" aria-label="select deal_value">
+                <option selected>حداقل ارزش معاملات</option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+            </select>
+        </div>
+
+        <button type="button" id="show_based_price_filters" class="btn btn-primary">نمایش براساس فیلترها</button>
+    </div>
+
+    <div class="px-5 py-3">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr class="text-center">
+                    <th>ردیف</th>
+                    <th>سهم</th>
+                    <th>اختیار خرید/فروش</th>
+                    <th>قیمت اعمال</th>
+                    <th>تاریخ سررسید</th>
+                    <th>فاصله تا انقضا</th>
+                    <th>تعداد</th>
+                    <th>حجم</th>
+                    <th>ارزش</th>
+                    <th>آخرین معامله</th>
+                    <th>پیشنهاد خرید</th>
+                    <th>پیشنهاد فروش</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contract, price in option_contracts_prices %}
+                    {% if price.deal_count %}
+                    <tr class="text-center">
+                        <th>{{ forloop.counter }}</th>
+                        <th>{{ contract.stock.symbol }}</th>
+                        <th>{{ contract.get_contract_type_display }}</th>
+                        <th>{{ contract.strike_price }}</th>
+                        <th>{{ contract.expiration_date|to_jalali }}</th>
+                        <th dir="ltr"><span>{{ contract.expiration_date|days_remaining }}</span><span>days</span></th>
+                        <th>{{ price.deal_count }}</th>
+                        <th>{{ price.deal_volume }}</th>
+                        <th>{{ price.deal_value }}</th>
+                        <th>{{ price.last_deal_price }}</th>
+                        <th>{{ price.buy_bid_price }}</th>
+                        <th>{{ price.sell_bid_price }}</th>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $("#contracts").addClass("active");
+
+        document.getElementById('show_based_price_filters').addEventListener('click', function() {
+            const deal_count_select = document.getElementById("deal_count_select").value;
+            console.log(deal_count_select);
+        });
+
+        /* const xhr = new XMLHttpRequest();
+        xhr.onload = function(){
+            var result = this.responseText;
+            console.log("response is ready:");
+            console.log(result);
+        }
+        xhr.open("GET", "/excel/list", true);
+        xhr.send(); */
+    });
+</script>
+{% endblock main_body %}

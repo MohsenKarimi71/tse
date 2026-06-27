@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     # My Apps
     'tse_downloader',
     'account',
+    'file_tracker',
+    'option_visualizer',
+    'option_strategy',
 ]
 
 MIDDLEWARE = [

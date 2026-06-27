@@ -82,7 +82,7 @@ class AbstractStockClass(models.Model):
     )
 
     def __str__(self):
-        return f'{self.name} - {self.get_group_display()}'
+        return f'{self.name} - {self.symbol} -{self.get_group_display()}'
 
     class Meta:
         abstract = True
@@ -93,28 +93,20 @@ class Stock(AbstractStockClass):
 
 
 class StockPrice(models.Model):
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)  # ارتباط با سهام خاص
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='prices')  # ارتباط با سهام خاص
     price = models.DecimalField(max_digits=10, decimal_places=2)  # قیمت سهام
     timestamp = models.DateTimeField(default=timezone.now)  # تاریخ و زمان ثبت قیمت
-
-    def save(self, *args, **kwargs):
-        if isinstance(self.timestamp, str):  # اگر تاریخ شمسی باشد
-            self.timestamp = persian_to_gregorian_datetime(self.timestamp)  # تبدیل به میلادی
-        super().save(*args, **kwargs)
-
-    def get_persian_timestamp(self):
-        return gregorian_to_persian_datetime(self.timestamp)  # تبدیل میلادی به شمسی هنگام نمایش
 
     class Meta:
         # اطمینان از اینکه برای هر سهام در هر زمان تنها یک قیمت ذخیره شده باشد
         unique_together = ('stock', 'timestamp')
 
     def __str__(self):
-        return f"Price of {self.stock.name} at {self.get_persian_timestamp()}: {self.price}"
+        return f"Price of {self.stock.name} at {self.timestamp}: {self.price}"
 
 
 class Option(models.Model):
-    stock = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
+    stock = models.ForeignKey(to=Stock, on_delete=models.CASCADE, related_name='contracts')
     strike_price = models.DecimalField(max_digits=10, decimal_places=2)  # قیمت اعمال
     expiration_date = models.DateField(auto_now=False, auto_now_add=False)
 
@@ -128,17 +120,22 @@ class Option(models.Model):
         max_length=4,
         choices=CONTRACT_CHOICES
     )
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['stock', 'strike_price', 'expiration_date', 'contract_type'],
+                name='unique_option_contract'
+            )
+        ]
+        # unique_together = ["stock", "strike_price", "expiration_date", "contract_type"]
 
 
 class OptionPrice(models.Model):
-    option = models.ForeignKey(to=Option, on_delete=models.CASCADE)
-    price = models.DecimalField(max_digits=10, decimal_places=2)  # قیمت پریمیوم
+    option = models.ForeignKey(to=Option, on_delete=models.CASCADE, related_name='prices')
     timestamp = models.DateTimeField(default=timezone.now)  # تاریخ و زمان ثبت قیمت
-
-    def save(self, *args, **kwargs):
-        if isinstance(self.timestamp, str):  # اگر تاریخ شمسی باشد
-            self.timestamp = persian_to_gregorian_datetime(self.timestamp)  # تبدیل به میلادی
-        super().save(*args, **kwargs)
-
-    def get_persian_timestamp(self):
-        return gregorian_to_persian_datetime(self.timestamp)  # تبدیل میلادی به شمسی هنگام نمایش
+    deal_count = models.BigIntegerField(default=0)   # تعداد معاملات
+    deal_volume = models.BigIntegerField(default=0)   #   حجم معاملات
+    deal_value = models.BigIntegerField(default=0)   #   ارزش معاملات
+    last_deal_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # قیمت آخرین معامله
+    buy_bid_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # بالاترین پیشنهاد خرید
+    sell_bid_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # پایین ترین پیشنهاد فروش
