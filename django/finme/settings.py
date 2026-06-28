@@ -11,6 +11,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+"""
+On Render, you'll receive a DATABASE_URL environment variable. We want Django to:
+    1. Use your local PostgreSQL when developing.
+    2. Automatically switch to Render's PostgreSQL when deployed.
+The cleanest way to do that is with the dj-database-url package.
+"""
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,15 +28,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3@j%38st%i6tdc191wfklrpaxx_f#0eqop3+vx^uvai3h!2@0a'
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "django-insecure-3@j%38st%i6tdc191wfklrpaxx_f#0eqop3+vx^uvai3h!2@0a"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = [
-    "127.0.0.1"
-]
-
+ALLOWED_HOSTS = os.environ.get(
+    "ALLOWED_HOSTS",
+    "127.0.0.1,localhost"
+).split(",")
 
 # Application definition
 
@@ -50,6 +61,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -91,6 +103,14 @@ DATABASES = {
         'HOST': 'localhost',     # Database host
         'PORT': '5432',          # Default PostgreSQL port
     }
+}
+DATABASES = {
+    "default": dj_database_url.parse(
+        os.environ.get(
+            "DATABASE_URL",
+            "postgresql://mohsen:MKtse@1075@localhost:5432/tse"
+        )
+    )
 }
 
 
@@ -134,6 +154,14 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

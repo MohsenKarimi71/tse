@@ -1,0 +1,330 @@
+@font-face {
+  font-family: IRANSans;
+  font-style: normal;
+  font-weight: normal;
+  src: url("../fonts/iranSans/eot/IRANSansWeb(FaNum).eot");
+  src: url("../fonts/iranSans/eot/IRANSansWeb(FaNum).eot?#iefix")
+      format("embedded-opentype"),
+    /* IE6-8 */ url("../fonts/iranSans/woff2/IRANSansWeb(FaNum).woff2")
+      format("woff2"),
+    /* FF39+,Chrome36+, Opera24+*/
+      url("../fonts/iranSans/woff/IRANSansWeb(FaNum).woff") format("woff"),
+    /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+      url("../fonts/iranSans/ttf/IRANSansWeb(FaNum).ttf") format("truetype");
+}
+
+
+* {
+  box-sizing: border-box;
+}
+
+canvas {
+  width: 100% !important;
+}
+
+#notification_badge {
+  animation: flash;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+}
+
+.flex_container {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.cards {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  column-gap: 3vw;
+}
+
+.card {
+  box-shadow: 0px 3px 5px rgb(90, 90, 90);
+  padding: 2vh 2vw;
+  flex-grow: 1;
+  height: 3rem;
+  color: white;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  font-weight: bold;
+}
+
+.card-green {
+  background-image: linear-gradient(to right, rgb(93, 232, 139), rgb(60, 180, 120));
+}
+
+.card-red {
+  background-image: linear-gradient(to right, rgb(194, 57, 77), rgb(239, 45, 113));
+}
+
+.card-violent {
+  background-image: linear-gradient(to right, rgb(165, 82, 243), rgb(82, 21, 237));
+}
+
+.card-orange {
+  background-image: linear-gradient(to right, rgb(225, 144, 245), rgb(252, 78, 65));
+}
+
+.vertical-empty-space {
+  height: 9vh;
+}
+
+.chart-container {
+  position: relative;
+  padding: 1vh 1vw;
+  box-shadow: 0px 3px 5px rgb(90, 90, 90);
+  background-color: white;
+  width: 99%;
+  height: 100%;
+  margin: auto;
+  border-radius: 1vw;
+}
+
+/* custom scrollbar */
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 5px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgb(67, 94, 190);
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(0, 0, 190);
+}
+
+/* custom scrollbar */
+
+/* base page styles */
+#page_container {
+  background-color: rgb(242, 247, 255);
+  min-height: 100vh;
+  height: auto;
+  display: grid;
+}
+
+/* header */
+#header {
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0px 0px 15px rgb(67, 94, 190);
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#header_right_logo {
+  flex-grow: 1;
+}
+
+#header_title {
+  flex-grow: 3;
+  text-align: right;
+  font-weight: bold;
+}
+
+#header_date {
+  flex-grow: 1;
+  text-align: center;
+  font-weight: bold;
+}
+
+#header_left_logo {
+  flex-grow: 1;
+  text-align: left;
+}
+
+#header_right_logo img,
+#header_left_logo img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* header */
+
+/* sidebar */
+#sidebar {
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0px 0px 15px rgb(67, 94, 190);
+  z-index: 1;
+  display: flex;
+}
+
+#sidebar a {
+  display: block;
+  color: rgb(37, 57, 157);
+  padding: 7px 12px;
+  text-decoration: none;
+  border-radius: 7px;
+}
+
+#sidebar a.active {
+  background-color: rgb(67, 94, 190);
+  color: white;
+}
+
+#sidebar a:hover:not(.active) {
+  background-color: rgb(220, 220, 220);
+  color: rgb(37, 57, 157);
+}
+
+/* sidebar */
+/* base page styles */
+
+/* media screen styles */
+/* Extra small devices (phones, 600px and down) */
+@media screen and (max-width: 600px) {
+  #page_container {
+    gap: 0px 0px;
+    grid-template-rows: 80px auto;
+  }
+
+  #header {
+    grid-row-start: 1;
+    grid-row-end: 2;
+  }
+
+  #header_title {
+    font-size: medium;
+    padding: 0px 15px;
+  }
+
+  #header_date {
+    font-size: small;
+    padding: 0px 15px;
+  }
+
+  #sidebar {
+    grid-row-start: 2;
+    grid-row-end: 3;
+    padding: 15px 15px 20px 15px;
+    flex-flow: column nowrap;
+  }
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media screen and (min-width: 600px) {
+  #page_container {
+    gap: 0px 0px;
+    grid-template-rows: 80px 60px;
+  }
+
+  #header {
+    grid-row-start: 1;
+    grid-row-end: 2;
+  }
+
+  #header_title {
+    font-size: medium;
+    padding: 0px 15px;
+  }
+
+  #header_date {
+    font-size: small;
+    padding: 0px 15px;
+  }
+
+  #sidebar {
+    grid-row-start: 2;
+    grid-row-end: 3;
+    padding: 10px 15px 10px 15px;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+  }
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media screen and (min-width: 768px) {
+  #page_container {
+    gap: 0px 0px;
+    grid-template-rows: 80px 60px;
+  }
+
+  #header {
+    grid-row-start: 1;
+    grid-row-end: 2;
+  }
+
+  #header_title {
+    font-size: large;
+  }
+
+  #header_date {
+    font-size: medium;
+  }
+
+  #sidebar {
+    grid-row-start: 2;
+    grid-row-end: 3;
+    padding: 10px 15px 10px 15px;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+  }
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media screen and (min-width: 992px) {
+  #page_container {
+    grid-template-columns: 150px auto;
+    grid-template-rows: 80px auto;
+  }
+
+  #header {
+    grid-row-start: 1;
+    grid-row-end: 2;
+    grid-column-start: 1;
+    grid-column-end: 3;
+  }
+
+  #header_title {
+    font-size: x-large;
+  }
+
+  #header_date {
+    font-size: medium;
+  }
+
+  #sidebar {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    padding: 30px 15px 20px 15px;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+  }
+
+  #sidebar a {
+    margin-bottom: 10px;
+  }
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media screen and (min-width: 1200px) {
+  #page_container {
+    grid-template-columns: 200px auto;
+  }
+
+  #header_title {
+    font-size: xx-large;
+  }
+
+  #header_date {
+    font-size: large;
+  }
+}
+
+/* media screen styles */
