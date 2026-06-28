@@ -47,6 +47,7 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
 ).split(",") if os.environ.get("CSRF_TRUSTED_ORIGINS") else []
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# SECURE_SSL_REDIRECT = True
 
 # Application definition
 
@@ -101,16 +102,6 @@ WSGI_APPLICATION = 'finme.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'tse',          # Database name
-        'USER': 'mohsen',        # Database user
-        'PASSWORD': 'mkmohsen1075@',# Database password
-        'HOST': 'localhost',     # Database host
-        'PORT': '5432',          # Default PostgreSQL port
-    }
-}
 DATABASES = {
     "default": dj_database_url.parse(
         os.environ.get(
