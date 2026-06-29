@@ -33,7 +33,14 @@ def download_tse_excel_data(request):
 
         start = time.perf_counter()
 
-        response = requests.get(DOWNLOAD_LINK, timeout=(10, 30))
+        response = requests.get(DOWNLOAD_LINK,
+        headers={
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 Chrome/137.0 Safari/537.36"
+            )
+        },
+        timeout=(10, 30))
         response.raise_for_status()
 
         logger.info(
