@@ -22,27 +22,79 @@ def setup_download_tse_excel_data(request):
     return render(request, "tse_downloader/setup.html")   
 
 
+import logging
+import time
+
+logger = logging.getLogger(__name__)
+
 def download_tse_excel_data(request):
-    """
-    Download the latest excel file from TSETMC,
-    save it on disk and return the saved file's path.
-    """
-    response = requests.get(DOWNLOAD_LINK)
+    try:
+        logger.info("Step 1: View started")
 
-    daily_directory_path = os.path.join(EXCEL_FILES_SAVE_PATH, jdatetime.date.today().strftime("%Y%m%d"))
-    os.makedirs(daily_directory_path, exist_ok=True)
+        start = time.perf_counter()
 
-    timestamp = jdatetime.datetime.now().time().strftime("%H%M%S")
-    path = os.path.join(daily_directory_path, timestamp + '.xlsx')
+        response = requests.get(DOWNLOAD_LINK, timeout=(10, 30))
+        response.raise_for_status()
+
+        logger.info(
+            "Step 2: Download completed in %.2f seconds (status=%s, size=%d bytes)",
+            time.perf_counter() - start,
+            response.status_code,
+            len(response.content),
+        )
+
+        daily_directory_path = os.path.join(
+            EXCEL_FILES_SAVE_PATH,
+            jdatetime.date.today().strftime("%Y%m%d")
+        )
+
+        os.makedirs(daily_directory_path, exist_ok=True)
+        logger.info("Step 3: Directory created")
+
+        timestamp = jdatetime.datetime.now().time().strftime("%H%M%S")
+        path = os.path.join(daily_directory_path, timestamp + ".xlsx")
+
+        with open(path, "wb") as output:
+            output.write(response.content)
+
+        logger.info("Step 4: File saved to %s", path)
+
+        excel_file = ExcelFileInfo(
+            directory=jdatetime.date.today().strftime("%Y%m%d"),
+            name=timestamp + ".xlsx"
+        )
+        excel_file.save()
+
+        logger.info("Step 5: Database record saved")
+
+        return JsonResponse({"msg": excel_file.name})
+
+    except Exception:
+        logger.exception("download_tse_excel_data failed")
+        raise
+
+
+# def download_tse_excel_data(request):
+#     """
+#     Download the latest excel file from TSETMC,
+#     save it on disk and return the saved file's path.
+#     """
+#     response = requests.get(DOWNLOAD_LINK)
+
+#     daily_directory_path = os.path.join(EXCEL_FILES_SAVE_PATH, jdatetime.date.today().strftime("%Y%m%d"))
+#     os.makedirs(daily_directory_path, exist_ok=True)
+
+#     timestamp = jdatetime.datetime.now().time().strftime("%H%M%S")
+#     path = os.path.join(daily_directory_path, timestamp + '.xlsx')
     
-    output = open(path, 'wb')
-    output.write(response.content)
-    output.close()
-    excel_file = ExcelFileInfo(directory=jdatetime.date.today().strftime("%Y%m%d"), name=timestamp + '.xlsx')
-    excel_file.save()
+#     output = open(path, 'wb')
+#     output.write(response.content)
+#     output.close()
+#     excel_file = ExcelFileInfo(directory=jdatetime.date.today().strftime("%Y%m%d"), name=timestamp + '.xlsx')
+#     excel_file.save()
 
-    # return render(request, "tse_downloader/setup.html") 
-    return JsonResponse({"msg":excel_file.name})
+#     # return render(request, "tse_downloader/setup.html") 
+#     return JsonResponse({"msg":excel_file.name})
 
 
 def save_stocks_with_options_2db_from_file(request, directory, name):
