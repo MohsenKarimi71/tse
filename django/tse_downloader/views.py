@@ -13,8 +13,8 @@ from file_tracker.models import ExcelFileInfo
 
 
 # DOWNLOAD_LINK = "https://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0&format=0"
-# DOWNLOAD_LINK = "https://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0"
-DOWNLOAD_LINK = "https://old.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0"
+DOWNLOAD_LINK = "https://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0"
+# DOWNLOAD_LINK = "https://old.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0"
 EXCEL_FILES_SAVE_PATH = os.path.join(settings.BASE_DIR, 'excel_files')
 
 

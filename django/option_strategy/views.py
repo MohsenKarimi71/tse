@@ -9,6 +9,10 @@ from option_visualizer.templatetags.date_filters import to_jalali, days_remainin
 SELL_BUY_COMMISSION = Decimal('1.26')
 OPTION_SELL_BUY_COMMISSION = Decimal('0.21')
 
+"""
+COVERED CALL STRATEGY FUNCTIONS
+"""
+
 def get_covered_call_sterategy_data(stock_price, premium, strike_price, status, remained_days):
     remained_days = remained_days
     cost = (stock_price * (1 + (SELL_BUY_COMMISSION / 100))) - (premium * (1 - (OPTION_SELL_BUY_COMMISSION / 100)))
@@ -164,3 +168,43 @@ def get_all_contracts_covered_call_data(request):
             "filtered_call_contracts_count":len(data['itm']) + len(data['otm']),
             # "stocks":list(all_option_chain.values()),
         })
+
+
+"""
+BULL CALL SPREAD STRATEGY FUNCTIONS
+"""
+
+def get_all_contracts_bull_call_spread_data(request):
+    # calculate the bull-call-spread starategy info for call contracts
+    all_option_chain = Stock.objects.filter(is_in_option_chain=True)
+
+    if request.method == "GET":
+        return render(request, "option_strategy/covered_call_all.html", context={"stocks":all_option_chain})
+    
+    elif request.method == "POST":
+        params = json.loads(request.body)
+
+        selected_stocks = params.get('stocks')
+        min_deal_count = params.get('min_deal_count')
+        min_deal_volume = params.get('min_deal_volume')
+        min_deal_value = params.get('min_deal_value')
+
+        if selected_stocks:
+            filtered_option_chain = Stock.objects.filter(pk__in=selected_stocks)
+        else:
+            filtered_option_chain = all_option_chain
+
+        call_contracts = []
+
+        # get call contracts of stocks in option chain only if price of stock exists
+        for stock in filtered_option_chain:
+            stock_price = stock.prices.order_by('-timestamp').first()
+            if(stock_price):
+                if(stock_price.price != 0):
+                    stock_price = stock_price.price
+                    call_contracts += list(Option.objects.filter(stock=stock.pk, contract_type="BUY").order_by("-expiration_date", "strike_price"))
+            
+                else:
+                    print("Stock price is zero ==> ", stock.symbol)
+            else:
+                print("No stock price: ", stock.symbol)
