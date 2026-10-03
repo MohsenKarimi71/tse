@@ -28,7 +28,6 @@
 
     <!-- Filters -->
     <div class="mx-2 px-5 py-2 mt-5 flex_container" style="align-items: stretch;">
-
         <div class="flex_container" style="flex-flow:col nowrap; justify-content: space-between;">
             <div style="width: 100%;" class="mt-5">
                 <span id="deal_count_select_live">0</span>
@@ -85,10 +84,10 @@
                     <th>مانده تا سررسید</th>
                     <th>هزینه خالص (دبیت)</th>
                     <th>نقطه سربه‌سر</th>
-                    <th>حداکثر سود</th>
+                    <th>حاشیه امن تا سربه‌سر (%)</th>
+                    <th>بازده در قیمت فعلی (%)</th>
                     <th>بازده حداکثر (%)</th>
                     <th>بازده روزانه (%)</th>
-                    <th>بازده سالانه (%)</th>
                     <th>نسبت ریسک به ریوارد</th>
                 </tr>
             </thead>
@@ -217,7 +216,7 @@
                 all_pairs_counter.innerHTML = "کل جفت‌های بررسی‌شده: " + result.total_pairs_evaluated;
 
                 const filtered_spreads_counter = document.getElementById('filtered_spreads_counter');
-                filtered_spreads_counter.innerHTML = "اسپردهای فیلترشده و سودده: " + result.filtered_spreads_count;
+                filtered_spreads_counter.innerHTML = "اسپردهای فیلترشده: " + result.filtered_spreads_count;
 
                 document.getElementById('info_cards').hidden = false;
 
@@ -225,13 +224,17 @@
                 tbody.innerHTML = '';
 
                 let counter = 0;
-                data.forEach(spread => {
+
+                const renderRow = (spread, isOtm = false) => {
                     const row = document.createElement('tr');
                     row.classList.add('text-center', 'align-middle');
 
                     counter++;
                     const index = document.createElement('td');
                     index.textContent = counter;
+                    if (isOtm) {
+                        index.style.backgroundColor = 'rgb(255, 180, 180)';
+                    }
                     row.appendChild(index);
 
                     const symbol = document.createElement('td');
@@ -276,36 +279,45 @@
                     breakeven_price.style.direction = 'ltr';
                     row.appendChild(breakeven_price);
 
-                    const max_profit = document.createElement('td');
-                    max_profit.textContent = spread.max_profit;
-                    max_profit.style.direction = 'ltr';
-                    row.appendChild(max_profit);
+                    // Downside Buffer %
+                    const downside_buffer = document.createElement('td');
+                    downside_buffer.textContent = spread.downside_buffer_percent + "%";
+                    downside_buffer.style.direction = 'ltr';
+                    downside_buffer.style.backgroundColor = value2color(spread.downside_buffer_percent, -10, 20);
+                    row.appendChild(downside_buffer);
 
+                    // Current Profit % (Intrinsic return at current stock price)
+                    const current_profit_percent = document.createElement('td');
+                    current_profit_percent.textContent = spread.current_profit_percent + "%";
+                    current_profit_percent.style.direction = 'ltr';
+                    current_profit_percent.style.backgroundColor = value2color(spread.current_profit_percent, -50, 50);
+                    row.appendChild(current_profit_percent);
+
+                    // Max Profit %
                     const max_profit_percent = document.createElement('td');
                     max_profit_percent.textContent = spread.max_profit_percent + "%";
                     max_profit_percent.style.direction = 'ltr';
                     max_profit_percent.style.backgroundColor = value2color(spread.max_profit_percent, 10, 100);
                     row.appendChild(max_profit_percent);
 
+                    // Daily Profit %
                     const daily_profit_percent = document.createElement('td');
                     daily_profit_percent.textContent = spread.daily_profit_percent + "%";
                     daily_profit_percent.style.direction = 'ltr';
                     daily_profit_percent.style.backgroundColor = value2color(spread.daily_profit_percent, 0.2, 2);
                     row.appendChild(daily_profit_percent);
 
-                    const yearly_profit_percent = document.createElement('td');
-                    yearly_profit_percent.textContent = spread.yearly_profit_percent + "%";
-                    yearly_profit_percent.style.direction = 'ltr';
-                    yearly_profit_percent.style.backgroundColor = value2color(spread.yearly_profit_percent, 30, 200);
-                    row.appendChild(yearly_profit_percent);
-
+                    // Risk / Reward Ratio
                     const risk_reward_ratio = document.createElement('td');
                     risk_reward_ratio.textContent = "1 : " + spread.risk_reward_ratio;
                     risk_reward_ratio.style.direction = 'ltr';
                     row.appendChild(risk_reward_ratio);
 
                     tbody.appendChild(row);
-                });
+                };
+
+                data["itm"].forEach(spread => renderRow(spread, false));
+                data["otm"].forEach(spread => renderRow(spread, true));
             })
             .catch(error => {
                 console.error("Error:", error);
