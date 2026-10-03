@@ -274,11 +274,8 @@ def save_option_contracts_deal_info_2db_from_file(request, directory, name):
                             # first delete other option's prices
                             deal_count = row[2].value
                             deal_volume = row[3].value
-                            deal_value = int(deal_volume) * int(row[10].value) # row[10] ==> final price
-                            # هر یک واحد از حجم قراردادهای اختیار برابر با هزار سهم است. برای
-                            # این موضوع ارزش معاملات باید در هزار ضرب شود
-                            # و برای تبدیل به تومان تقسیم بر 10 بشود 
-                            deal_value *= 100
+                            deal_value = int(row[4].value / 10)  # برای تبدیل به تومان تقسیم بر 10
+    
                             last_deal_price = row[7].value
                             buy_bid_price = row[19].value
                             sell_bid_price = row[20].value
