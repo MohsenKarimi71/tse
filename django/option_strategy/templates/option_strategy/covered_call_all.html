@@ -3,6 +3,42 @@
 {% load date_filters %}
 
 {% block template_styles %}
+<style>
+    /* تنظیم پویای عرض جدول و واکنش‌گرایی کامل */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+    }
+    #contract_table {
+        width: 100% !important;
+        margin-bottom: 1rem;
+        white-space: nowrap;
+    }
+    #contract_table th.sortable {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        padding-left: 20px;
+        transition: background-color 0.2s ease;
+    }
+    #contract_table th.sortable:hover {
+        background-color: #212529;
+        color: #ffffff;
+    }
+    #contract_table th.sortable .sort-arrow {
+        font-size: 0.75rem;
+        margin-right: 4px;
+        opacity: 0.6;
+    }
+    #contract_table th.sortable.asc .sort-arrow {
+        opacity: 1;
+        content: " ▲";
+    }
+    #contract_table th.sortable.desc .sort-arrow {
+        opacity: 1;
+        content: " ▼";
+    }
+</style>
 {% endblock template_styles %}
 
 {% block template_js %}
@@ -15,9 +51,9 @@
 {% endblock sidebar %}
 
 {% block main_body %}
-<div>
+<div class="container-fluid px-3">
     <!-- Cards -->
-    <div id="info_cards" class="cards px-5 mt-5" hidden>
+    <div id="info_cards" class="cards mt-4" hidden>
         <div class="card card-violent" id="all_contracts_counter">
             اختیار خریدهای با سهام قیمت دار: {{ all_call_contracts_count }}
         </div>
@@ -30,31 +66,30 @@
     </div>
 
     <!-- Filters -->
-    <div class="mx-2 px-5 py-2 mt-5 flex_container" style="align-items: stretch;">
-
-        <div class="flex_container" style="flex-flow:col nowrap; justify-content: space-between;">
-            <div style="width: 100%;" class="mt-5">
+    <div class="py-2 mt-4 flex_container w-100" style="align-items: stretch;">
+        <div class="flex_container w-100" style="flex-flow:col nowrap; justify-content: space-between;">
+            <div style="width: 100%;" class="mt-4">
                 <span id="deal_count_select_live">0</span>
                 <span>معامله</span>
                 <input type="range" class="form-range" min="0" max="10000" step="1" id="deal_count_select" value="0">
                 <label for="deal_count_select" class="form-label">حداقل تعداد معاملات</label>
             </div>
 
-            <div style="width: 100%;" class="mt-5">
+            <div style="width: 100%;" class="mt-4">
                 <span id="deal_volume_select_live">0</span>
                 <span>سهم</span>
                 <input type="range" class="form-range" min="0" max="1000000" step="100" id="deal_volume_select" value="0">
                 <label for="deal_volume_select" class="form-label">حداقل حجم معاملات</label>
             </div>
 
-            <div style="width: 100%;" class="mt-5">
+            <div style="width: 100%;" class="mt-4">
                 <span id="deal_value_select_live">0</span>
                 <span>تومان</span>
                 <input type="range" class="form-range" min="0" max="1000000000" step="1000000" id="deal_value_select" value="0">
                 <label for="deal_value_select" class="form-label">حداقل ارزش معاملات</label>
             </div>
 
-            <select class="selectpicker form-control mt-5" multiple
+            <select class="selectpicker form-control mt-4" multiple
                 id="stocks_select"
                 title="انتخاب سهام"
                 data-live-search="true"
@@ -67,37 +102,41 @@
             </select>
         </div>
 
-
-        <div style="align-self: center;" class="mt-5">
+        <div style="align-self: center;" class="mt-4">
             <button type="button" id="show_based_price_filters" class="btn btn-success">نمایش براساس فیلترها</button>
         </div>
     </div>
 
     <!-- Table -->
-    <div class="mx-2 mt-5 px-5 pt-2 border-top border-dark border-3">
-        <table class="table table-striped table-hover" id="contract_table">
+    <div class="mt-4 pt-2 border-top border-dark border-3 table-responsive w-100">
+        <table class="table table-striped table-hover w-100" id="contract_table">
             <thead>
-                <tr class="text-center">
+                <tr class="text-center align-middle">
                     <th>ردیف</th>
                     <th>سهم</th>
                     <th>قیمت</th>
                     <th>قیمت اعمال</th>
-                    <th>تعداد</th>
-                    <th>حجم</th>
-                    <th>ارزش</th>
                     <th>آخرین معامله</th>
                     <th>پیشنهاد خرید</th>
                     <th>پیشنهاد فروش</th>
                     <th>تاریخ سررسید</th>
-                    <th>فاصله تا انقضا</th>
-                    <th>بازده فعلی</th>
-                    <th>بازده روزانه</th>
-                    <th>بازده سالیانه</th>
-                    <th>حاشیه امن</th>
-                    <th>حاشیه امن روزانه</th>
-                    <th>امتیاز ریسک</th>
+                    <!-- ۱. فاصله تا انقضا (ایندکس ۸) -->
+                    <th class="sortable" data-col="8">فاصله تا انقضا<span class="sort-arrow"> ⇅</span></th>
+                    <!-- ۲. بازده فعلی (ایندکس ۹) -->
+                    <th class="sortable" data-col="9">بازده فعلی<span class="sort-arrow"> ⇅</span></th>
+                    <!-- بازده بیشینه (ایندکس ۱۰) -->
                     <th>بازده بیشینه</th>
-                    
+                    <!-- <th>بازده روزانه</th> -->
+                    <!-- <th>بازده سالیانه</th> -->
+                    <!-- ۳. حاشیه امن (ایندکس ۱۱) -->
+                    <th class="sortable" data-col="11">حاشیه امن<span class="sort-arrow"> ⇅</span></th>
+                    <!-- <th>حاشیه امن روزانه</th> -->
+                    <!-- ۴. امتیاز ریسک (ایندکس ۱۲) -->
+                    <th class="sortable" data-col="12">امتیاز ریسک<span class="sort-arrow"> ⇅</span></th>
+                    <!-- انتقال ستون‌های حجم، تعداد و ارزش به انتها -->
+                    <th>تعداد</th>
+                    <th>حجم</th>
+                    <th>ارزش (M)</th>
                 </tr>
             </thead>
             <tbody>
@@ -107,29 +146,22 @@
 </div>
 
 <script>
-    $(document).ready(function() {
-        $("#option_strategies").addClass("active");
+    $(document).ready(function() {$("#option_strategies").addClass("active");
 
         function value2color(value, min_profit, max_profit) {
-            if(value < min_profit) {
-                value = min_profit;
-            }
-            if(value > max_profit) {
-                value = max_profit;
-            }
+            if(value < min_profit) value = min_profit;
+            if(value > max_profit) value = max_profit;
 
-            const ratio = (value - min_profit) / (max_profit - min_profit);  // normalization to (0, 1)
-            const r = Math.round(255 * (1 - ratio));  // red color
-            const g = Math.round(255 * ratio);  // green color
-            const b = 100;  // blue color
+            const ratio = (value - min_profit) / (max_profit - min_profit);
+            const r = Math.round(255 * (1 - ratio));
+            const g = Math.round(255 * ratio);
+            const b = 100;
 
-            return `rgb(${r}, ${g}, ${b})`
+            return `rgb(${r}, ${g}, ${b})`;
         }
 
         function number2words(num) {
-            if(num === 0) {
-                return "صفر";
-            }
+            if(num === 0 || num === "0") return "صفر";
             const yekan = ["", "یک", "دو", "سه", "چهار", "پنج", "شش", "هفت", "هشت", "نه"];
             const dahyekan = ["ده", "یازده", "دوازده", "سیزده", "چهارده", "پانزده", "شانزده", "هفده", "هجده", "نوزده"];
             const dahgan = ["", "", "بیست", "سی", "چهل", "پنجاه", "شصت", "هفتاد", "هشتاد", "نود"];
@@ -137,49 +169,40 @@
             const hezargan = ["", "هزار", "میلیون", "میلیارد", "تریلیون"];
 
             function threeDigits2word(n) {
-                let word = ""
-
+                let word = "";
                 let s = Math.floor(n / 100);
                 let d = Math.floor((n % 100) / 10);
-                let y = n % 10
+                let y = n % 10;
                 
                 if (s !== 0) {
                     word += sadgan[s] + " ";
-                    if (d > 0 || y > 0) {
-                        word += "و ";
-                    }
+                    if (d > 0 || y > 0) word += "و ";
                 }
-
                 if (d === 1) {
                     word += dahyekan[y] + " ";
                     return word;
                 } else if(d !== 0) {
                     word += dahgan[d] + " ";
-                    if(y > 0) {
-                        word += "و "
-                    }
+                    if(y > 0) word += "و ";
                 }
-                if(y !== 0) {
-                    word += yekan[y] + " ";
-                }
-                return word
+                if(y !== 0) word += yekan[y] + " ";
+                return word;
             }
             
             let parts = [];
             let groupIndex = 0;
+            let n = parseInt(num, 10);
             
-            while(num > 0) {
-                let threeDigits = num % 1000;
+            while(n > 0) {
+                let threeDigits = n % 1000;
                 if(threeDigits !== 0) {
                     let part = threeDigits2word(threeDigits);
                     part += hezargan[groupIndex];
                     parts.push(part.trim());
                 }
-
-                num = Math.floor(num / 1000);
+                n = Math.floor(n / 1000);
                 groupIndex++;
             }
-
             return parts.reverse().join(" و ");
         }
 
@@ -197,6 +220,69 @@
         document.getElementById("deal_value_select").addEventListener('input', function(){
             deal_value_select_live.textContent = number2words(this.value);
         });
+
+        // مرتب‌سازی فقط برای ستون‌های دارای کلاس sortable
+        let currentSortColIndex = -1;
+        let isAscending = true;
+
+        function cleanValue(text) {
+            let clean = text.replace(/%/g, '').replace(/روز/g, '').replace(/M/g, '').replace(/m/g, '').replace(/,/g, '').trim();
+            let num = parseFloat(clean);
+            return isNaN(num) ? clean : num;
+        }
+
+        function sortTableByColumn(table, colIndex) {
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            if (rows.length === 0) return;
+
+            if (currentSortColIndex === colIndex) {
+                isAscending = !isAscending;
+            } else {
+                isAscending = true;
+                currentSortColIndex = colIndex;
+            }
+
+            rows.sort((rowA, rowB) => {
+                const cellA = rowA.children[colIndex] ? rowA.children[colIndex].textContent.trim() : '';
+                const cellB = rowB.children[colIndex] ? rowB.children[colIndex].textContent.trim() : '';
+
+                const valA = cleanValue(cellA);
+                const valB = cleanValue(cellB);
+
+                if (typeof valA === 'number' && typeof valB === 'number') {
+                    return isAscending ? valA - valB : valB - valA;
+                } else {
+                    return isAscending 
+                        ? valA.toString().localeCompare(valB.toString(), 'fa') 
+                        : valB.toString().localeCompare(valA.toString(), 'fa');
+                }
+            });
+
+            // بازشماری شماره ردیف‌ها
+            rows.forEach((row, idx) => {
+                row.children[0].textContent = idx + 1;
+                tbody.appendChild(row);
+            });
+
+            // به‌روزرسانی جهت فلش در سرستون‌های قابل مرتب‌سازی
+            table.querySelectorAll('th.sortable').forEach(th => {
+                const targetCol = parseInt(th.getAttribute('data-col'), 10);
+                const arrowSpan = th.querySelector('.sort-arrow');
+                if (targetCol === colIndex) {
+                    arrowSpan.textContent = isAscending ? " ▲" : " ▼";
+                } else {
+                    arrowSpan.textContent = " ⇅";
+                }
+            });
+        }
+
+        document.querySelectorAll('#contract_table th.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const colIndex = parseInt(th.getAttribute('data-col'), 10);
+                sortTableByColumn(document.getElementById('contract_table'), colIndex);
+            });
+        });
     
         document.getElementById('show_based_price_filters').addEventListener('click', function() {
             const selected_deal_count = document.getElementById("deal_count_select").value;
@@ -209,18 +295,16 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // 'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({
-                    min_deal_count:selected_deal_count,
-                    min_deal_volume:selected_deal_volume,
-                    min_deal_value:selected_deal_value,
-                    stocks:selected_stocks,
+                    min_deal_count: selected_deal_count,
+                    min_deal_volume: selected_deal_volume,
+                    min_deal_value: selected_deal_value,
+                    stocks: selected_stocks,
                 })
             })
             .then(response => response.json())
             .then(result => {
-                // console.log("data:", result.data);
                 const data = result.data;
                 const all_contracts_counter = document.getElementById('all_contracts_counter');
                 all_contracts_counter.innerHTML = "تعداد کل قراردادها: " + result.all_call_contracts_count;
@@ -234,209 +318,205 @@
                 document.getElementById('info_cards').hidden = false;
 
                 const tbody = document.querySelector('#contract_table tbody');
-                tbody.innerHTML = '';  // clear current data of table
+                tbody.innerHTML = '';
 
                 let counter = 0;
                 data["itm"].forEach(contract => {
                     const row = document.createElement('tr');
-
+                    counter++;
+                    // ردیف (۰)
                     const index = document.createElement('td');
-                    counter ++;
                     index.textContent = counter;
                     row.appendChild(index);
 
+                    // سهم (۱)
                     const symbol = document.createElement('td');
                     symbol.textContent = contract.stock;
                     row.appendChild(symbol);
 
+                    // قیمت سهم (۲)
                     const stock_price = document.createElement('td');
                     stock_price.textContent = contract.stock_price;
                     row.appendChild(stock_price);
 
+                    // قیمت اعمال (۳)
                     const strike_price = document.createElement('td');
                     strike_price.textContent = contract.strike_price;
                     row.appendChild(strike_price);
 
-                    const deal_count = document.createElement('td');
-                    deal_count.textContent = contract.deal_count;
-                    row.appendChild(deal_count);
-
-                    const deal_volume = document.createElement('td');
-                    deal_volume.textContent = contract.deal_volume;
-                    row.appendChild(deal_volume);
-
-                    const deal_value = document.createElement('td');
-                    deal_value.textContent = contract.deal_value;
-                    row.appendChild(deal_value);
-
+                    // آخرین معامله (۴)
                     const last_deal_price = document.createElement('td');
                     last_deal_price.textContent = contract.last_deal_price;
                     row.appendChild(last_deal_price);
 
+                    // پیشنهاد خرید (۵)
                     const buy_bid_price = document.createElement('td');
                     buy_bid_price.textContent = contract.buy_bid_price;
                     row.appendChild(buy_bid_price);
 
+                    // پیشنهاد فروش (۶)
                     const sell_bid_price = document.createElement('td');
                     sell_bid_price.textContent = contract.sell_bid_price;
                     row.appendChild(sell_bid_price);
 
+                    // تاریخ سررسید (۷)
                     const expiration_date = document.createElement('td');
                     expiration_date.textContent = contract.expiration_date;
                     row.appendChild(expiration_date);
 
+                    // فاصله تا انقضا (۸ - قابل مرتب‌سازی)
                     const days_remaining = document.createElement('td');
                     days_remaining.textContent = contract.days_remaining + " روز";
                     row.appendChild(days_remaining);
                     
+                    // بازده فعلی (۹ - قابل مرتب‌سازی)
                     const cccpp = document.createElement('td');
                     cccpp.textContent = contract.current_profit;
                     cccpp.style.direction = 'ltr';
-                    // cccpp.style.backgroundColor = value2color(contract.current_profit, -25, 25);
-                    row.appendChild(cccpp);  //Covered Call Current Profit Percent
+                    row.appendChild(cccpp);
 
-                    const cccdpp = document.createElement('td');
-                    cccdpp.textContent = contract.daily_profit_percent;
-                    cccdpp.style.backgroundColor = value2color(contract.daily_profit_percent, -1, 1);
-                    cccdpp.style.direction = 'ltr';
-                    row.appendChild(cccdpp);  //Covered Call Current Daily Profit Percent
+                    // بازده بیشینه (۱۰)
+                    const ccmpp = document.createElement('td');
+                    ccmpp.textContent = contract.max_profit;
+                    ccmpp.style.direction = 'ltr';
+                    row.appendChild(ccmpp);
 
-                    const cccypp = document.createElement('td');
-                    cccypp.textContent = contract.yearly_profit_percent;
-                    cccypp.style.backgroundColor = value2color(contract.yearly_profit_percent, 30, 100);
-                    cccypp.style.direction = 'ltr';
-                    row.appendChild(cccypp);  //Covered Call Current Yearly Profit Percent
-
+                    // حاشیه امن (۱۱ - قابل مرتب‌سازی)
                     const ccnrrp = document.createElement('td');
                     ccnrrp.textContent = contract.no_risk_range;
                     ccnrrp.style.direction = 'ltr';
-                    row.appendChild(ccnrrp);  //Covered Call No-Risk Range Percent
+                    row.appendChild(ccnrrp);
 
-                    const ccdnrrp = document.createElement('td');
-                    ccdnrrp.textContent = Math.round((contract.no_risk_range / contract.days_remaining) * 10) / 10;
-                    ccdnrrp.style.direction = 'ltr';
-                    ccdnrrp.style.backgroundColor = value2color(Math.round((contract.no_risk_range / contract.days_remaining) * 10) / 10, -5, 5);
-                    row.appendChild(ccdnrrp);  //Covered Call Daily No-Risk Range Percent
-
+                    // امتیاز ریسک (۱۲ - قابل مرتب‌سازی)
                     const ccrs = document.createElement('td');
                     ccrs.textContent = contract.risk_score;
                     ccrs.style.direction = 'ltr';
                     ccrs.style.backgroundColor = value2color(contract.risk_score, -4, 10);
-                    row.appendChild(ccrs);  //Covered Call Risk Score
+                    row.appendChild(ccrs);
 
-                    const ccmpp = document.createElement('td');
-                    ccmpp.textContent = contract.max_profit;
-                    ccmpp.style.direction = 'ltr';
-                    row.appendChild(ccmpp);  //Covered Call Max Profit Percent
+                    // تعداد (۱۳)
+                    const deal_count = document.createElement('td');
+                    deal_count.textContent = contract.deal_count;
+                    row.appendChild(deal_count);
 
-                    row.classList.add('text-center');
+                    // حجم (۱۴)
+                    const deal_volume = document.createElement('td');
+                    deal_volume.textContent = contract.deal_volume;
+                    row.appendChild(deal_volume);
 
+                    // ارزش بر حسب میلیون تومان (۱۵)
+                    const deal_value = document.createElement('td');
+                    const valueInMillions = Math.round((contract.deal_value / 1000000) * 10) / 10;
+                    deal_value.textContent = valueInMillions + " M";
+                    deal_value.style.direction = 'ltr';
+                    row.appendChild(deal_value);
+
+                    row.classList.add('text-center', 'align-middle');
                     tbody.appendChild(row);
                 });
 
                 data["otm"].forEach(contract => {
                     const row = document.createElement('tr');
-
+                    counter++;
+                    // ردیف (۰)
                     const index = document.createElement('td');
-                    counter ++;
                     index.textContent = counter;
                     index.style.backgroundColor = 'rgb(255, 50, 150)';
                     row.appendChild(index);
 
+                    // سهم (۱)
                     const symbol = document.createElement('td');
                     symbol.textContent = contract.stock;
                     row.appendChild(symbol);
 
+                    // قیمت سهم (۲)
                     const stock_price = document.createElement('td');
                     stock_price.textContent = contract.stock_price;
                     row.appendChild(stock_price);
 
+                    // قیمت اعمال (۳)
                     const strike_price = document.createElement('td');
                     strike_price.textContent = contract.strike_price;
                     row.appendChild(strike_price);
 
-                    const deal_count = document.createElement('td');
-                    deal_count.textContent = contract.deal_count;
-                    row.appendChild(deal_count);
-
-                    const deal_volume = document.createElement('td');
-                    deal_volume.textContent = contract.deal_volume;
-                    row.appendChild(deal_volume);
-
-                    const deal_value = document.createElement('td');
-                    deal_value.textContent = contract.deal_value;
-                    row.appendChild(deal_value);
-
+                    // آخرین معامله (۴)
                     const last_deal_price = document.createElement('td');
                     last_deal_price.textContent = contract.last_deal_price;
                     row.appendChild(last_deal_price);
 
+                    // پیشنهاد خرید (۵)
                     const buy_bid_price = document.createElement('td');
                     buy_bid_price.textContent = contract.buy_bid_price;
                     row.appendChild(buy_bid_price);
 
+                    // پیشنهاد فروش (۶)
                     const sell_bid_price = document.createElement('td');
                     sell_bid_price.textContent = contract.sell_bid_price;
                     row.appendChild(sell_bid_price);
 
+                    // تاریخ سررسید (۷)
                     const expiration_date = document.createElement('td');
                     expiration_date.textContent = contract.expiration_date;
                     row.appendChild(expiration_date);
 
+                    // فاصله تا انقضا (۸ - قابل مرتب‌سازی)
                     const days_remaining = document.createElement('td');
                     days_remaining.textContent = contract.days_remaining + " روز";
                     row.appendChild(days_remaining);
 
+                    // بازده فعلی (۹ - قابل مرتب‌سازی)
                     const cccpp = document.createElement('td');
                     cccpp.textContent = contract.current_profit;
                     cccpp.style.direction = 'ltr';
-                    row.appendChild(cccpp);  //Covered Call Current Profit Percent
+                    row.appendChild(cccpp);
 
-                    const cccdpp = document.createElement('td');
-                    cccdpp.textContent = contract.daily_profit_percent;
-                    cccdpp.style.backgroundColor = value2color(contract.daily_profit_percent, -1, 1);
-                    cccdpp.style.direction = 'ltr';
-                    row.appendChild(cccdpp);  //Covered Call Current Daily Profit Percent
-                    
-                    const cccypp = document.createElement('td');
-                    cccypp.textContent = contract.yearly_profit_percent;
-                    cccypp.style.backgroundColor = value2color(contract.yearly_profit_percent, 30, 100);
-                    cccypp.style.direction = 'ltr';
-                    row.appendChild(cccypp);  //Covered Call Current Yearly Profit Percent
+                    // بازده بیشینه (۱۰)
+                    const ccmpp = document.createElement('td');
+                    ccmpp.textContent = contract.max_profit;
+                    ccmpp.style.direction = 'ltr';
+                    row.appendChild(ccmpp);
 
+                    // حاشیه امن (۱۱ - قابل مرتب‌سازی)
                     const ccnrrp = document.createElement('td');
                     ccnrrp.textContent = contract.no_risk_range;
                     ccnrrp.style.direction = 'ltr';
-                    ccnrrp.style.backgroundColor = value2color(contract.no_risk_range, -50, 50);
-                    row.appendChild(ccnrrp);  //Covered Call No-Risk Range Percent
+                    row.appendChild(ccnrrp);
 
-                    const ccdnrrp = document.createElement('td');
-                    ccdnrrp.textContent = Math.round((contract.no_risk_range / contract.days_remaining) * 10) / 10;
-                    ccdnrrp.style.direction = 'ltr';
-                    ccdnrrp.style.backgroundColor = value2color(Math.round((contract.no_risk_range / contract.days_remaining) * 10) / 10, -5, 5);
-                    row.appendChild(ccdnrrp);  //Covered Call Daily No-Risk Range Percent
-
+                    // امتیاز ریسک (۱۲ - قابل مرتب‌‌سازی)
                     const ccrs = document.createElement('td');
                     ccrs.textContent = contract.risk_score;
                     ccrs.style.direction = 'ltr';
                     ccrs.style.backgroundColor = value2color(contract.risk_score, -4, 10);
-                    row.appendChild(ccrs);  //Covered Call Risk Score
+                    row.appendChild(ccrs);
 
-                    const ccmpp = document.createElement('td');
-                    ccmpp.textContent = contract.max_profit;
-                    ccmpp.style.direction = 'ltr';
-                    row.appendChild(ccmpp);  //Covered Call Max Profit Percent
+                    // تعداد (۱۳)
+                    const deal_count = document.createElement('td');
+                    deal_count.textContent = contract.deal_count;
+                    row.appendChild(deal_count);
 
-                    row.classList.add('text-center');
+                    // حجم (۱۴)
+                    const deal_volume = document.createElement('td');
+                    deal_volume.textContent = contract.deal_volume;
+                    row.appendChild(deal_volume);
 
+                    // ارزش بر حسب میلیون تومان (۱۵)
+                    const deal_value = document.createElement('td');
+                    const valueInMillions = Math.round((contract.deal_value / 1000000) * 10) / 10;
+                    deal_value.textContent = valueInMillions + " M";
+                    deal_value.style.direction = 'ltr';
+                    row.appendChild(deal_value);
+
+                    row.classList.add('text-center', 'align-middle');
                     tbody.appendChild(row);
                 });
 
+                // بازنشانی نشانگرهای مرتب‌سازی
+                currentSortColIndex = -1;
+                document.querySelectorAll('#contract_table th.sortable .sort-arrow').forEach(span => span.textContent = " ⇅");
             })
             .catch(error => {
                 console.error("Error:", error);
             });
-
         });
     });
 </script>

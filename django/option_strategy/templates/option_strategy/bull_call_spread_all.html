@@ -3,6 +3,42 @@
 {% load date_filters %}
 
 {% block template_styles %}
+<style>
+    /* تنظیم پویای عرض جدول و واکنش‌گرایی کامل */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+    }
+    #contract_table {
+        width: 100% !important;
+        margin-bottom: 1rem;
+        white-space: nowrap;
+    }
+    #contract_table th.sortable {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        padding-left: 20px;
+        transition: background-color 0.2s ease;
+    }
+    #contract_table th.sortable:hover {
+        background-color: #212529;
+        color: #ffffff;
+    }
+    #contract_table th.sortable .sort-arrow {
+        font-size: 0.75rem;
+        margin-right: 4px;
+        opacity: 0.6;
+    }
+    #contract_table th.sortable.asc .sort-arrow {
+        opacity: 1;
+        content: " ▲";
+    }
+    #contract_table th.sortable.desc .sort-arrow {
+        opacity: 1;
+        content: " ▼";
+    }
+</style>
 {% endblock template_styles %}
 
 {% block template_js %}
@@ -15,9 +51,9 @@
 {% endblock sidebar %}
 
 {% block main_body %}
-<div>
+<div class="container-fluid px-3">
     <!-- Cards -->
-    <div id="info_cards" class="cards px-5 mt-5" hidden>
+    <div id="info_cards" class="cards mt-4" hidden>
         <div class="card card-violent" id="all_pairs_counter">
             کل جفت‌های بررسی‌شده: 0
         </div>
@@ -27,30 +63,30 @@
     </div>
 
     <!-- Filters -->
-    <div class="mx-2 px-5 py-2 mt-5 flex_container" style="align-items: stretch;">
-        <div class="flex_container" style="flex-flow:col nowrap; justify-content: space-between;">
-            <div style="width: 100%;" class="mt-5">
+    <div class="py-2 mt-4 flex_container w-100" style="align-items: stretch;">
+        <div class="flex_container w-100" style="flex-flow:col nowrap; justify-content: space-between;">
+            <div style="width: 100%;" class="mt-4">
                 <span id="deal_count_select_live">0</span>
                 <span>معامله</span>
                 <input type="range" class="form-range" min="0" max="10000" step="1" id="deal_count_select" value="0">
                 <label for="deal_count_select" class="form-label">حداقل تعداد معاملات</label>
             </div>
 
-            <div style="width: 100%;" class="mt-5">
+            <div style="width: 100%;" class="mt-4">
                 <span id="deal_volume_select_live">0</span>
                 <span>سهم</span>
                 <input type="range" class="form-range" min="0" max="1000000" step="100" id="deal_volume_select" value="0">
                 <label for="deal_volume_select" class="form-label">حداقل حجم معاملات</label>
             </div>
 
-            <div style="width: 100%;" class="mt-5">
+            <div style="width: 100%;" class="mt-4">
                 <span id="deal_value_select_live">0</span>
                 <span>تومان</span>
                 <input type="range" class="form-range" min="0" max="1000000000" step="1000000" id="deal_value_select" value="0">
                 <label for="deal_value_select" class="form-label">حداقل ارزش معاملات</label>
             </div>
 
-            <select class="selectpicker form-control mt-5" multiple
+            <select class="selectpicker form-control mt-4" multiple
                 id="stocks_select"
                 title="انتخاب سهام"
                 data-live-search="true"
@@ -63,32 +99,35 @@
             </select>
         </div>
 
-        <div style="align-self: center;" class="mt-5">
+        <div style="align-self: center;" class="mt-4">
             <button type="button" id="show_based_price_filters" class="btn btn-success">نمایش براساس فیلترها</button>
         </div>
     </div>
 
     <!-- Table -->
-    <div class="mx-2 mt-5 px-5 pt-2 border-top border-dark border-3">
-        <table class="table table-striped table-hover" id="contract_table">
+    <div class="mt-4 pt-2 border-top border-dark border-3 table-responsive w-100">
+        <table class="table table-striped table-hover w-100" id="contract_table">
             <thead>
                 <tr class="text-center align-middle">
                     <th>ردیف</th>
-                    <th>نماد سهم</th>
-                    <th>قیمت سهم</th>
-                    <th>اعمال خرید (K1)</th>
-                    <th>قیمت خرید (Ask)</th>
-                    <th>اعمال فروش (K2)</th>
-                    <th>قیمت فروش (Bid)</th>
+                    <th>نماد</th>
+                    <th>قیمت</th>
+                    <th>اعمال خرید</th>
+                    <th>قیمت خرید</th>
+                    <th>اعمال فروش</th>
+                    <th>قیمت فروش</th>
                     <th>سررسید</th>
-                    <th>مانده تا سررسید</th>
-                    <th>هزینه خالص (دبیت)</th>
-                    <th>نقطه سربه‌سر</th>
-                    <th>حاشیه امن تا سربه‌سر (%)</th>
-                    <th>بازده در قیمت فعلی (%)</th>
-                    <th>بازده حداکثر (%)</th>
-                    <th>بازده روزانه (%)</th>
-                    <th>نسبت ریسک به ریوارد</th>
+                    <!-- ۱. مانده تا سررسید -->
+                    <th class="sortable" data-col="8">مانده تا انقضا<span class="sort-arrow"> ⇅</span></th>
+                    <th>هزینه خالص</th>
+                    <th>قیمت سربه‌سر</th>
+                    <!-- ۲. حاشیه امن تا سربه‌سر -->
+                    <th class="sortable" data-col="11">حاشیه امن(%)<span class="sort-arrow"> ⇅</span></th>
+                    <!-- ۳. بازده در قیمت فعلی -->
+                    <th class="sortable" data-col="12">بازده فعلی(%)<span class="sort-arrow"> ⇅</span></th>
+                    <th>بازده حداکثر(%)</th>
+                    <!-- <th>بازده روزانه (%)</th> -->
+                    <th>ریسک به ریوارد</th>
                 </tr>
             </thead>
             <tbody>
@@ -98,16 +137,11 @@
 </div>
 
 <script>
-    $(document).ready(function() {
-        $("#option_strategies").addClass("active");
+    $(document).ready(function() {$("#option_strategies").addClass("active");
 
         function value2color(value, min_profit, max_profit) {
-            if(value < min_profit) {
-                value = min_profit;
-            }
-            if(value > max_profit) {
-                value = max_profit;
-            }
+            if(value < min_profit) value = min_profit;
+            if(value > max_profit) value = max_profit;
 
             const ratio = (value - min_profit) / (max_profit - min_profit);
             const r = Math.round(255 * (1 - ratio));
@@ -118,9 +152,7 @@
         }
 
         function number2words(num) {
-            if(num === 0 || num === "0") {
-                return "صفر";
-            }
+            if(num === 0 || num === "0") return "صفر";
             const yekan = ["", "یک", "دو", "سه", "چهار", "پنج", "شش", "هفت", "هشت", "نه"];
             const dahyekan = ["ده", "یازده", "دوازده", "سیزده", "چهارده", "پانزده", "شانزده", "هفده", "هجده", "نوزده"];
             const dahgan = ["", "", "بیست", "سی", "چهل", "پنجاه", "شصت", "هفتاد", "هشتاد", "نود"];
@@ -135,23 +167,16 @@
                 
                 if (s !== 0) {
                     word += sadgan[s] + " ";
-                    if (d > 0 || y > 0) {
-                        word += "و ";
-                    }
+                    if (d > 0 || y > 0) word += "و ";
                 }
-
                 if (d === 1) {
                     word += dahyekan[y] + " ";
                     return word;
                 } else if(d !== 0) {
                     word += dahgan[d] + " ";
-                    if(y > 0) {
-                        word += "و ";
-                    }
+                    if(y > 0) word += "و ";
                 }
-                if(y !== 0) {
-                    word += yekan[y] + " ";
-                }
+                if(y !== 0) word += yekan[y] + " ";
                 return word;
             }
             
@@ -166,11 +191,9 @@
                     part += hezargan[groupIndex];
                     parts.push(part.trim());
                 }
-
                 n = Math.floor(n / 1000);
                 groupIndex++;
             }
-
             return parts.reverse().join(" و ");
         }
 
@@ -187,6 +210,76 @@
         const deal_value_select_live = document.getElementById("deal_value_select_live");
         document.getElementById("deal_value_select").addEventListener('input', function(){
             deal_value_select_live.textContent = number2words(this.value);
+        });
+
+        // مرتب‌سازی فقط برای ستون‌های دارای کلاس sortable
+        let currentSortColIndex = -1;
+        let isAscending = true;
+
+        function cleanValue(text) {
+            let clean = text.replace(/%/g, '').replace(/روز/g, '').replace(/,/g, '').trim();
+            if (clean.includes(':')) {
+                let parts = clean.split(':');
+                if (parts.length === 2 && !isNaN(parseFloat(parts[1]))) {
+                    return parseFloat(parts[1]);
+                }
+            }
+            let num = parseFloat(clean);
+            return isNaN(num) ? clean : num;
+        }
+
+        function sortTableByColumn(table, colIndex) {
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            if (rows.length === 0) return;
+
+            if (currentSortColIndex === colIndex) {
+                isAscending = !isAscending;
+            } else {
+                isAscending = true;
+                currentSortColIndex = colIndex;
+            }
+
+            rows.sort((rowA, rowB) => {
+                const cellA = rowA.children[colIndex] ? rowA.children[colIndex].textContent.trim() : '';
+                const cellB = rowB.children[colIndex] ? rowB.children[colIndex].textContent.trim() : '';
+
+                const valA = cleanValue(cellA);
+                const valB = cleanValue(cellB);
+
+                if (typeof valA === 'number' && typeof valB === 'number') {
+                    return isAscending ? valA - valB : valB - valA;
+                } else {
+                    return isAscending 
+                        ? valA.toString().localeCompare(valB.toString(), 'fa') 
+                        : valB.toString().localeCompare(valA.toString(), 'fa');
+                }
+            });
+
+            // بازشماری شماره ردیف‌ها
+            rows.forEach((row, idx) => {
+                row.children[0].textContent = idx + 1;
+                tbody.appendChild(row);
+            });
+
+            // به‌روزرسانی نشانگرهای جهت مرتب‌سازی
+            table.querySelectorAll('th.sortable').forEach(th => {
+                const targetCol = parseInt(th.getAttribute('data-col'), 10);
+                const arrowSpan = th.querySelector('.sort-arrow');
+                if (targetCol === colIndex) {
+                    arrowSpan.textContent = isAscending ? " ▲" : " ▼";
+                } else {
+                    arrowSpan.textContent = " ⇅";
+                }
+            });
+        }
+
+        // پیوند رویداد کلیک تنها به سرستون‌های مشخص‌شده
+        document.querySelectorAll('#contract_table th.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const colIndex = parseInt(th.getAttribute('data-col'), 10);
+                sortTableByColumn(document.getElementById('contract_table'), colIndex);
+            });
         });
     
         document.getElementById('show_based_price_filters').addEventListener('click', function() {
@@ -224,12 +317,13 @@
                 tbody.innerHTML = '';
 
                 let counter = 0;
-
+                
                 const renderRow = (spread, isOtm = false) => {
                     const row = document.createElement('tr');
                     row.classList.add('text-center', 'align-middle');
 
                     counter++;
+                    // ردیف (ایندکس ۰)
                     const index = document.createElement('td');
                     index.textContent = counter;
                     if (isOtm) {
@@ -237,77 +331,89 @@
                     }
                     row.appendChild(index);
 
+                    // نماد (ایندکس ۱)
                     const symbol = document.createElement('td');
                     symbol.textContent = spread.stock;
                     row.appendChild(symbol);
 
+                    // قیمت (ایندکس ۲)
                     const stock_price = document.createElement('td');
                     stock_price.textContent = spread.stock_price;
                     row.appendChild(stock_price);
 
+                    // اعمال خرید (ایندکس ۳)
                     const long_strike = document.createElement('td');
                     long_strike.textContent = spread.long_strike;
                     row.appendChild(long_strike);
 
+                    // قیمت خرید (ایندکس ۴)
                     const long_buy_price = document.createElement('td');
                     long_buy_price.textContent = spread.long_buy_price;
                     row.appendChild(long_buy_price);
 
+                    // اعمال فروش (ایندکس ۵)
                     const short_strike = document.createElement('td');
                     short_strike.textContent = spread.short_strike;
                     row.appendChild(short_strike);
 
+                    // قیمت فروش (ایندکس ۶)
                     const short_sell_price = document.createElement('td');
                     short_sell_price.textContent = spread.short_sell_price;
                     row.appendChild(short_sell_price);
 
+                    // سررسید (ایندکس ۷)
                     const expiration_date = document.createElement('td');
                     expiration_date.textContent = spread.expiration_date;
                     row.appendChild(expiration_date);
 
+                    // مانده تا انقضا (ایندکس ۸ - قابل مرتب‌سازی)
                     const days_remaining = document.createElement('td');
                     days_remaining.textContent = spread.days_remaining + " روز";
                     row.appendChild(days_remaining);
 
+                    // هزینه خالص (ایندکس ۹)
                     const net_debit = document.createElement('td');
                     net_debit.textContent = spread.net_debit;
                     net_debit.style.direction = 'ltr';
                     row.appendChild(net_debit);
 
+                    // قیمت سربه‌سر (ایندکس ۱۰)
                     const breakeven_price = document.createElement('td');
                     breakeven_price.textContent = spread.breakeven_price;
                     breakeven_price.style.direction = 'ltr';
                     row.appendChild(breakeven_price);
 
-                    // Downside Buffer %
+                    // حاشیه امن(%) (ایندکس ۱۱ - قابل مرتب‌سازی)
                     const downside_buffer = document.createElement('td');
                     downside_buffer.textContent = spread.downside_buffer_percent + "%";
                     downside_buffer.style.direction = 'ltr';
                     downside_buffer.style.backgroundColor = value2color(spread.downside_buffer_percent, -10, 20);
                     row.appendChild(downside_buffer);
 
-                    // Current Profit % (Intrinsic return at current stock price)
+                    // بازده فعلی(%) (ایندکس ۱۲ - قابل مرتب‌سازی)
                     const current_profit_percent = document.createElement('td');
                     current_profit_percent.textContent = spread.current_profit_percent + "%";
                     current_profit_percent.style.direction = 'ltr';
                     current_profit_percent.style.backgroundColor = value2color(spread.current_profit_percent, -50, 50);
                     row.appendChild(current_profit_percent);
 
-                    // Max Profit %
+                    // بازده حداکثر(%) (ایندکس ۱۳)
                     const max_profit_percent = document.createElement('td');
                     max_profit_percent.textContent = spread.max_profit_percent + "%";
                     max_profit_percent.style.direction = 'ltr';
                     max_profit_percent.style.backgroundColor = value2color(spread.max_profit_percent, 10, 100);
                     row.appendChild(max_profit_percent);
 
-                    // Daily Profit %
+                    /*
+                    // بازده روزانه (%) - در حال حاضر کامنت شده است
                     const daily_profit_percent = document.createElement('td');
                     daily_profit_percent.textContent = spread.daily_profit_percent + "%";
                     daily_profit_percent.style.direction = 'ltr';
                     daily_profit_percent.style.backgroundColor = value2color(spread.daily_profit_percent, 0.2, 2);
                     row.appendChild(daily_profit_percent);
+                    */
 
-                    // Risk / Reward Ratio
+                    // ریسک به ریوارد (ایندکس ۱۴)
                     const risk_reward_ratio = document.createElement('td');
                     risk_reward_ratio.textContent = "1 : " + spread.risk_reward_ratio;
                     risk_reward_ratio.style.direction = 'ltr';
@@ -318,6 +424,10 @@
 
                 data["itm"].forEach(spread => renderRow(spread, false));
                 data["otm"].forEach(spread => renderRow(spread, true));
+
+                // بازنشانی وضعیت آیکون‌های مرتب‌سازی
+                currentSortColIndex = -1;
+                document.querySelectorAll('#contract_table th.sortable .sort-arrow').forEach(span => span.textContent = " ⇅");
             })
             .catch(error => {
                 console.error("Error:", error);
